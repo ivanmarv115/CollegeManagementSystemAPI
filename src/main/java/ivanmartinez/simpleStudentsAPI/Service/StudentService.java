@@ -11,7 +11,7 @@ public interface StudentService {
 
     List<Student> getAllStudents();
 
-    void deleteStudent(Long id);
+    ResponseEntity<String> deleteStudent(Long id);
 
-    void updateStudent(Student student);
+    ResponseEntity<String> updateStudent(Student student);
 }
