@@ -3,6 +3,8 @@ package ivanmartinez.simpleStudentsAPI.Service;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Repository.StudentsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,8 +16,9 @@ public class StudentServiceImpl implements StudentService{
     private StudentsRepository studentsRepository;
 
     @Override
-    public void createStudent(Student student) {
+    public ResponseEntity<String> createStudent(Student student) {
         studentsRepository.save(student);
+        return new ResponseEntity<String>("Student created successfully", HttpStatus.CREATED);
     }
 
     @Override

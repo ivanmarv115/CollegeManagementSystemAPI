@@ -28,8 +28,7 @@ public class StudentsController {
             @RequestBody Student student
     ){
 
-        studentService.createStudent(student);
-        return new ResponseEntity<String>("Student created", HttpStatus.CREATED);
+        return studentService.createStudent(student);
 
     }
 

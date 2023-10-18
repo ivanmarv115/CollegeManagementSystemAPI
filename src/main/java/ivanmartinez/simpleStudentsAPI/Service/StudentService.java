@@ -1,12 +1,13 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface StudentService {
 
-    void createStudent(Student student);
+    ResponseEntity<String> createStudent(Student student);
 
     List<Student> getAllStudents();
 
