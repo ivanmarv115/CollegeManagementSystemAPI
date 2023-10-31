@@ -1,5 +1,6 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
+import ivanmartinez.simpleStudentsAPI.DTO.StudentFilterDTO;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Repository.StudentsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +19,43 @@ public class StudentServiceImpl implements StudentService{
 
     @Override
     public ResponseEntity<String> createStudent(Student student) {
+        System.out.println("Service Post: " + student);
         studentsRepository.save(student);
         return new ResponseEntity<>("Student created successfully", HttpStatus.CREATED);
     }
 
     @Override
-    public List<Student> getAllStudents() {
-        return studentsRepository.findAll();
+    public ResponseEntity<List<Student>> getAllStudents() {
+        List<Student> students = studentsRepository.findAll();
+
+        if(!students.isEmpty()){
+            return new ResponseEntity<>(students, HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @Override
+    public ResponseEntity<List<Student>> getFilteredStudents(Optional<String> firstNameParam,
+                                                             Optional<String> lastNameParam,
+                                                             Optional<String> courseParam) {
+
+        String firstName = firstNameParam.orElse("");
+        String lastName = lastNameParam.orElse("");
+        String course = courseParam.orElse("");
+
+        System.out.println("Get By Service: " + " FM: "+ firstName
+                + " LM: " + lastName + " C: " + course);
+
+        List<Student> students = studentsRepository
+                .findByFirstNameContainingAndLastNameContainingAndCourseContaining
+                        (firstName, lastName, course);
+
+        if(!students.isEmpty()){
+            return new ResponseEntity<>(students, HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @Override
@@ -61,4 +92,5 @@ public class StudentServiceImpl implements StudentService{
                 ("Student with id " + student.getId() + " not found",
                         HttpStatus.NOT_FOUND);
     }
+
 }

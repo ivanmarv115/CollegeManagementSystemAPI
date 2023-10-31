@@ -1,5 +1,6 @@
 package ivanmartinez.simpleStudentsAPI.Controller;
 
+import ivanmartinez.simpleStudentsAPI.DTO.StudentFilterDTO;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Service.StudentService;
 import jakarta.validation.Valid;
@@ -13,8 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/students")
 public class StudentsController {
 
@@ -23,14 +26,24 @@ public class StudentsController {
 
     @GetMapping
     public ResponseEntity<List<Student>> getAllStudents(){
-        List<Student> students = studentService.getAllStudents();
-        return new ResponseEntity<List<Student>>(students, HttpStatus.OK);
+        return studentService.getAllStudents();
+    }
+
+    @GetMapping("/by")
+    public ResponseEntity<List<Student>> getFilteredStudents(@RequestParam(required = false) Optional<String> firstName,
+                                                             @RequestParam(required = false) Optional<String> lastName,
+                                                             @RequestParam(required = false) Optional<String> course){
+
+
+        System.out.println("Get by called");
+        return studentService.getFilteredStudents(firstName, lastName, course);
     }
 
     @PostMapping
     public ResponseEntity<String> createStudent(
             @RequestBody @Valid Student student
     ){
+        System.out.println("Controller Post: " + student);
         return studentService.createStudent(student);
     }
 
