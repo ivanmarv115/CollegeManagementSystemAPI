@@ -1,12 +1,13 @@
 package ivanmartinez.simpleStudentsAPI.Controller;
 
-import ivanmartinez.simpleStudentsAPI.DTO.StudentFilterDTO;
+import ivanmartinez.simpleStudentsAPI.Entity.Role;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Service.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +18,8 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/students")
+@CrossOrigin
 public class StudentsController {
 
     @Autowired
@@ -39,6 +40,7 @@ public class StudentsController {
         return studentService.getFilteredStudents(firstName, lastName, course);
     }
 
+    @Secured("ROLE_ADMIN")
     @PostMapping
     public ResponseEntity<String> createStudent(
             @RequestBody @Valid Student student
@@ -47,6 +49,7 @@ public class StudentsController {
         return studentService.createStudent(student);
     }
 
+    @Secured("ROLE_ADMIN")
     @DeleteMapping
     public ResponseEntity<String> deleteStudent(
             @RequestBody Map<String, String> payload
@@ -54,6 +57,7 @@ public class StudentsController {
         return studentService.deleteStudent(Long.valueOf(payload.get("id")));
     }
 
+    @Secured("ROLE_ADMIN")
     @PutMapping
     public ResponseEntity<String> updateStudent(
             @RequestBody Student student
