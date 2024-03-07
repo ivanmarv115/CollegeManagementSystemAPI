@@ -24,7 +24,7 @@ pipeline {
         stage('Build and Push'){
             steps{
                 script{
-                    withCredentials([usernamePassword(credentialsId: '1571dd4b-9786-4e5f-a6be-cf6874885e5b',
+                    withCredentials([usernamePassword(credentialsId: 'ivanmarvdocker',
                         passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                             sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                     }
