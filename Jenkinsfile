@@ -26,8 +26,7 @@ pipeline {
                 script{
                     sh 'docker build -t ivanmarv/college-api .'
                 }
-                withCredentials([usernamePassword(credentialsId: 'ivanmarvdocker',
-                    passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                withCredentials([usernamePassword(credentialsId: 'ivanmarvdocker', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                         sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                 }
                 script{
@@ -39,7 +38,7 @@ pipeline {
         stage('Deploy'){
             steps{
                 sshagent(['18.231.52.168']){
-                    sh 'ssh -i "collegeApiTestPair.pem" ec2-user@ec2-18-231-52-168.sa-east-1.compute.amazonaws.com'
+                    sh 'ssh ec2-user@ec2-18-231-52-168.sa-east-1.compute.amazonaws.com'
                     sh 'docker run -d -p 8080:8080 --name college-api ivanmarv/college-api'
                 }
             }
