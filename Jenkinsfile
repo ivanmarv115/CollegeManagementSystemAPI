@@ -12,7 +12,7 @@ pipeline {
 
         stage('Quality Analysis'){
             steps{
-                sh ''' mvn sonar:sonar -Dsonar.host.url=http://172.18.0.4:9000/ \
+                sh ''' mvn sonar:sonar -Dsonar.host.url=http://172.18.0.3:9000/ \
                         -Dsonar.login=squ_39179cdc97e2ba3a4d0bb1f3b0457963c494775c \
                         -Dsonar.projectName=collegeTest \
                         -Dsonar.java.binaries=. \
