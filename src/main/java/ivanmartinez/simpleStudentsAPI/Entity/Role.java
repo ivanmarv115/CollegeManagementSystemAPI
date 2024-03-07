@@ -3,8 +3,10 @@ package ivanmartinez.simpleStudentsAPI.Entity;
 import org.springframework.security.core.GrantedAuthority;
 
 public enum Role implements GrantedAuthority {
-    USER,
-    ADMIN;
+    STUDENT,
+    PROFESSOR,
+    ADMIN,
+    USER;
 
     @Override
     public String getAuthority() {

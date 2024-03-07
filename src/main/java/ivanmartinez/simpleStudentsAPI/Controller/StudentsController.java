@@ -1,7 +1,11 @@
 package ivanmartinez.simpleStudentsAPI.Controller;
 
+import ivanmartinez.simpleStudentsAPI.DTO.CreateStudentRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetStudentsResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.IdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
+import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Service.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +30,7 @@ public class StudentsController {
     private StudentService studentService;
 
     @GetMapping
-    public ResponseEntity<List<Student>> getAllStudents(){
+    public ResponseEntity<List<GetStudentsResponse>> getAllStudents(){
         return studentService.getAllStudents();
     }
 
@@ -36,32 +40,30 @@ public class StudentsController {
                                                              @RequestParam(required = false) Optional<String> course){
 
 
-        System.out.println("Get by called");
         return studentService.getFilteredStudents(firstName, lastName, course);
     }
 
     @Secured("ROLE_ADMIN")
     @PostMapping
     public ResponseEntity<String> createStudent(
-            @RequestBody @Valid Student student
-    ){
-        System.out.println("Controller Post: " + student);
-        return studentService.createStudent(student);
+            @RequestBody CreateStudentRequest createStudentRequest
+    ) throws CustomException {
+        return studentService.createStudent(createStudentRequest);
     }
 
     @Secured("ROLE_ADMIN")
     @DeleteMapping
     public ResponseEntity<String> deleteStudent(
-            @RequestBody Map<String, String> payload
-            ){
-        return studentService.deleteStudent(Long.valueOf(payload.get("id")));
+            @RequestBody IdRequest idRequest
+            ) throws CustomException {
+        return studentService.deleteStudent(idRequest);
     }
 
     @Secured("ROLE_ADMIN")
     @PutMapping
     public ResponseEntity<String> updateStudent(
             @RequestBody Student student
-    ){
+    ) throws CustomException {
         return studentService.updateStudent(student);
     }
 

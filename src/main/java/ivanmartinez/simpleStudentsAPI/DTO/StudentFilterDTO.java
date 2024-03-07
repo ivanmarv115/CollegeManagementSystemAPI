@@ -12,10 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StudentFilterDTO {
-
     private String firstName;
     private String lastName;
     private String course;
     private String dateOfBirth;
-
 }

@@ -1,22 +1,24 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
-import ivanmartinez.simpleStudentsAPI.DTO.StudentFilterDTO;
+import ivanmartinez.simpleStudentsAPI.DTO.CreateStudentRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetStudentsResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.IdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
+import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface StudentService {
 
-    ResponseEntity<String> createStudent(Student student);
+    ResponseEntity<String> createStudent(CreateStudentRequest createStudentRequest) throws CustomException;
 
-    ResponseEntity<List<Student>> getAllStudents();
+    ResponseEntity<List<GetStudentsResponse>> getAllStudents();
 
-    ResponseEntity<String> deleteStudent(Long id);
+    ResponseEntity<String> deleteStudent(IdRequest id) throws CustomException;
 
-    ResponseEntity<String> updateStudent(Student student);
+    ResponseEntity<String> updateStudent(Student student) throws CustomException;
 
     ResponseEntity<List<Student>> getFilteredStudents(Optional<String> firstName,
                                                       Optional<String> lastName,

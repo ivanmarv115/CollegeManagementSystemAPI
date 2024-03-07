@@ -8,12 +8,16 @@ import ivanmartinez.simpleStudentsAPI.Entity.Role;
 import ivanmartinez.simpleStudentsAPI.Entity.User;
 import ivanmartinez.simpleStudentsAPI.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientResponseException;
 
 @Service
 @RequiredArgsConstructor
@@ -23,21 +27,21 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     public ResponseEntity<AuthenticationResponse> register(
             RegisterRequest request
     ) {
         var user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.valueOf(request.getRole()))
+                .role(request.getRole())
                 .build();
 
         userRepository.save(user);
         var jwt = jwtService.generateToken(user);
         var authResponse = AuthenticationResponse.builder()
+                .role(request.getRole())
                 .token(jwt)
                 .build();
 
@@ -47,22 +51,33 @@ public class AuthenticationService {
 
     public ResponseEntity<AuthenticationResponse> authenticate
             (AuthenticationRequest request) {
+        logger.info("***** AUTHENTICATION BEGIN *****");
+        AuthenticationResponse authResponse = new AuthenticationResponse();
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
+            var user = userRepository.findByUsername(request.getUsername())
+                    .orElseThrow();
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
-        var user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow();
+            var jwt = jwtService.generateToken(user);
+            authResponse.setRole(user.getRole());
+            authResponse.setToken(jwt);
 
-        var jwt = jwtService.generateToken(user);
-        var authResponse = AuthenticationResponse.builder()
-                .token(jwt)
-                .build();
+            logger.info("Authentication OK");
+            logger.info("***** AUTHENTICATION END *****");
+            return new ResponseEntity<AuthenticationResponse>(authResponse,
+                    HttpStatus.OK);
+        }catch (AuthenticationException exception){
+            logger.error(exception.getMessage());
+            authResponse.setMessage(exception.getMessage());
+            logger.info("***** AUTHENTICATION END *****");
+            return new ResponseEntity<AuthenticationResponse>(authResponse,
+                    HttpStatus.UNAUTHORIZED);
+        }
 
-        return new ResponseEntity<AuthenticationResponse>(authResponse,
-                HttpStatus.OK);
     }
 }
