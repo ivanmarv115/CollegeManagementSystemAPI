@@ -39,6 +39,7 @@ pipeline {
             steps{
                 sshagent(['18.231.52.168']){
                     sh '''
+                        ssh ec2-user@ec2-18-231-52-168.sa-east-1.compute.amazonaws.com \
                         "docker run -d -p 8080:8080 --name college-api ivanmarv/college-api"
                     '''
                     }
