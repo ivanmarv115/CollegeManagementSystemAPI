@@ -23,12 +23,14 @@ pipeline {
 
         stage('Build and Push'){
             steps{
+                script{
+                    sh 'docker build -t ivanmarv/college-api .'
+                }
                 withCredentials([usernamePassword(credentialsId: 'ivanmarvdocker',
                     passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                         sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                 }
                 script{
-                   sh 'docker build -t ivanmarv/college-api .'
                    sh 'docker push ivanmarv/college-api'
                 }
             }
