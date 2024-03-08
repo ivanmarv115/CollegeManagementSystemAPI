@@ -55,7 +55,7 @@ pipeline {
             sh 'docker logout'
             emailext body: 'Test mail',
             subject: 'Test',
-            recipient: $DEFAULT_RECIPIENTS,
+            recipient: $DEFAULT_RECIPIENTS
         }
     }
 }
