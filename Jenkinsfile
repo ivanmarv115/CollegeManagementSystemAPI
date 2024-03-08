@@ -49,6 +49,9 @@ pipeline {
             }
         }
 */
+    stage('mail'){
+        emailext body: 'Test mail', subject: 'Test', to: 'ivan.martinez@itti.digital'
+    }
     }
     post {
         always {
