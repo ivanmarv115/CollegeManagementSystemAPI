@@ -49,10 +49,11 @@ pipeline {
             }
         }
 */
-    stage('mail'){
-        steps{
-            scripts{
-                emailext body: 'Test mail', subject: 'Test', to: 'ivan.martinez@itti.digital'
+        stage('mail'){
+            steps{
+                scripts{
+                    emailext body: 'Test mail', subject: 'Test', to: 'ivan.martinez@itti.digital'
+                }
             }
         }
     }
