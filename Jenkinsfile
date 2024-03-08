@@ -58,7 +58,7 @@ pipeline {
     post {
         always {
             sh 'docker logout'
-            emailext body: 'Test mail', subject: 'Test', to: 'ivan.martinez@itti.digital'
+            emailext body: 'Build Number: ${currentBuild.number}, status: ${currentBuild.status}, console output: ${env.BUILD_URL}', subject: '$DEFAULT_SUBJECT', to: 'ivan.martinez@itti.digital'
         }
     }
 }
