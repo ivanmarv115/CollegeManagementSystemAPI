@@ -53,7 +53,9 @@ pipeline {
     post {
         always {
             sh 'docker logout'
-            emailext body: 'Test mail', subject: 'Test'
+            emailext body: 'Test mail',
+            subject: 'Test',
+            recipient: $DEFAULT_RECIPIENTS,
         }
     }
 }
