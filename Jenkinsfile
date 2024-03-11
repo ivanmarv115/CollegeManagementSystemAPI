@@ -44,7 +44,7 @@ pipeline {
                         ssh -o UserKnownHostsFile=/var/jenkins_home/.ssh/known_hosts ec2-user@ec2-18-228-39-170.sa-east-1.compute.amazonaws.com "
                             docker stop college-api || true
                             docker rm college-api || true
-                            docker run -d -p 8080:8080 --name college-api ivanmarv/college-api:1.0.0
+                            docker run -d -p 8080:8080 --name college-api ivanmarv/college-api
                         "
                     """
                 }
