@@ -53,8 +53,6 @@ pipeline {
                 sshagent(['18.231.52.168']){
                     sh """
                         ssh -o UserKnownHostsFile=/var/jenkins_home/.ssh/known_hosts $AWS_USER@$AWS_HOST "
-                            docker stop $CONTAINER_NAME || true
-                            docker rm $CONTAINER_NAME || true
                             docker run -d -p 8080:8080 --name $IMG_NAME $CONTAINER_NAME
                         "
                     """
