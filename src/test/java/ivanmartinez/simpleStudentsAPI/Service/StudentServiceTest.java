@@ -1,27 +1,26 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CreateStudentRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.GetStudentsResponse;
-import ivanmartinez.simpleStudentsAPI.DTO.IdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.*;
+import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Entity.User;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
+import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.StudentsRepository;
+import ivanmartinez.simpleStudentsAPI.Repository.UserRepository;
 import ivanmartinez.simpleStudentsAPI.Utils.StudentUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.lang.reflect.Array;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -39,16 +38,15 @@ class StudentServiceTest {
     private UserService userService;
     @Mock
     private StudentUtils studentUtils;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private CourseRepository courseRepository;
+    @InjectMocks
     private StudentServiceImpl underTest;
 
     @Value("${default.user.password}")
     private String defaultPassword;
-
-
-    @BeforeEach
-    void setUp() {
-        underTest = new StudentServiceImpl(studentsRepository, studentUtils,userService);
-    }
 
     @Test
     void shouldCreateStudent() throws CustomException {
@@ -77,6 +75,7 @@ class StudentServiceTest {
             .lastName("Martinez")
             .degree("Undergraduate")
             .dateOfBirth("23/08/2001")
+            .courses(new HashSet<>())
             .user(user)
             .build();
 
@@ -85,6 +84,9 @@ class StudentServiceTest {
         given(userService.createUser(createUserRequest)).willReturn(user);
         given(studentUtils.createStudentRequestToCreateUserRequest(createStudentRequest))
                 .willReturn(createUserRequest);
+        given(userRepository.findByUsername(createStudentRequest.getUsername())).willReturn(
+                Optional.empty()
+        );
 
         //when
         underTest.createStudent(createStudentRequest);
@@ -100,23 +102,30 @@ class StudentServiceTest {
     }
 
     @Test
-    void shouldGetAllStudents() {
+    void shouldGetAllStudents() throws CustomException {
         //given
         User user = User.builder()
                 .username("imartinez")
                 .role(Role.STUDENT)
                 .build();
 
+        Course course = Course.builder()
+                .name("Course 1")
+                .build();
+
+        Student student = Student.builder()
+                .firstName("Ivan")
+                .lastName("Martinez")
+                .degree("Undergraduate")
+                .dateOfBirth("23/08/2001")
+                .user(user)
+                .courses(Set.of(course))
+                .build();
+
+        course.setStudents(Set.of(student));
+
         ArrayList<Student> students = new ArrayList<>();
-        students.add(
-                Student.builder()
-                        .firstName("Ivan")
-                        .lastName("Martinez")
-                        .degree("Undergraduate")
-                        .dateOfBirth("23/08/2001")
-                        .user(user)
-                        .build()
-        );
+        students.add(student);
 
         ArrayList<GetStudentsResponse> expectedResponse = new ArrayList<>();
         expectedResponse.add(GetStudentsResponse.builder()
@@ -125,12 +134,10 @@ class StudentServiceTest {
                 .degree("Undergraduate")
                 .dateOfBirth("23/08/2001")
                 .username("imartinez")
+                .courses(Set.of(course))
                 .build());
 
         given(studentsRepository.findAll()).willReturn(students);
-        given(studentUtils.studentEntityToStudentResponse(students.get(0))).willReturn(
-                expectedResponse.get(0)
-        );
         //when
         ResponseEntity<List<GetStudentsResponse>> response = underTest.getAllStudents();
 
@@ -142,18 +149,18 @@ class StudentServiceTest {
     @Test
     void shouldDeleteStudent() throws CustomException {
         //given
-        IdRequest idRequest = IdRequest.builder()
-                .id(1L)
+        LongIdRequest longIdRequest = LongIdRequest.builder()
+                .longId(1L)
                 .build();
 
         Optional<Student> studentOptional = Optional.ofNullable(Student.builder()
                 .id(1L)
                 .build());
 
-        given(studentsRepository.findById(idRequest.getId())).willReturn(studentOptional);
+        given(studentsRepository.findById(longIdRequest.getLongId())).willReturn(studentOptional);
 
         //when
-        underTest.deleteStudent(idRequest);
+        underTest.deleteStudent(longIdRequest);
 
         //test
         ArgumentCaptor<Student> studentArgumentCaptor = ArgumentCaptor.forClass(Student.class);
@@ -166,16 +173,16 @@ class StudentServiceTest {
     @Test
     void shouldThrow404OnDelete(){
         //given
-        IdRequest idRequest = IdRequest.builder()
-                .id(2L)
+        LongIdRequest longIdRequest = LongIdRequest.builder()
+                .longId(2L)
                 .build();
 
-        given(studentsRepository.findById(idRequest.getId())).willReturn(Optional.empty());
+        given(studentsRepository.findById(longIdRequest.getLongId())).willReturn(Optional.empty());
 
         //test
-        assertThatThrownBy(() -> underTest.deleteStudent(idRequest))
+        assertThatThrownBy(() -> underTest.deleteStudent(longIdRequest))
                 .isInstanceOf(CustomException.class)
-                .hasMessageContaining("Student with idRequest IdRequest(id=2) does not exist");
+                .hasMessageContaining("Student does not exist");
 
         verify(studentsRepository, never()).delete(any());
     }
@@ -232,6 +239,65 @@ class StudentServiceTest {
                 .hasMessageContaining("Student with id 2 not found");
 
         verify(studentsRepository, never()).delete(any());
+    }
+
+    @Test
+    void shouldEnrollToCourse() throws CustomException {
+        //given
+        StudentCourseEnrollRequest request = StudentCourseEnrollRequest.builder()
+                .courseId(1L)
+                .studentId(1L)
+                .build();
+
+        Student studentFound = Student.builder()
+                .id(1L)
+                .firstName("Ivan")
+                .lastName("Martinez")
+                .degree("Undergraduate")
+                .dateOfBirth("23/08/2001")
+                .courses(new HashSet<>())
+                .build();
+
+        Course courseFound = Course.builder()
+                .id(1L)
+                .code("M101")
+                .name("Math 101")
+                .degree("Degree")
+                .year("1")
+                .students(new HashSet<>())
+                .build();
+
+        Student expectedNewStudent = Student.builder()
+                .id(1L)
+                .firstName("Ivan")
+                .lastName("Martinez")
+                .degree("Undergraduate")
+                .dateOfBirth("23/08/2001")
+                .courses(Set.of(courseFound))
+                .build();
+
+        Course expectedNewCourse = Course.builder()
+                .id(1L)
+                .code("M101")
+                .name("Math 101")
+                .degree("Degree")
+                .year("1")
+                .students(Set.of(studentFound))
+                .build();
+
+        given(studentsRepository.findById(request.getStudentId())).willReturn(
+                Optional.of(studentFound)
+        );
+        given(courseRepository.findById(request.getCourseId()))
+                .willReturn(Optional.of(courseFound));
+
+        //when
+        underTest.enrollToCourse(request);
+
+        //test
+        verify(studentsRepository).save(expectedNewStudent);
+        verify(courseRepository).save(expectedNewCourse);
+
     }
 
 }

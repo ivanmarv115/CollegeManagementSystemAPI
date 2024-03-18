@@ -3,7 +3,7 @@ package ivanmartinez.simpleStudentsAPI.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -16,9 +16,10 @@ public class Professor {
     private Long id;
     private String firstName;
     private String lastName;
-
-    //TODO: Delete this property once courses work correctly
-    private List<String> coursesTaught;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinTable(name = "professor_course_mapping", joinColumns = @JoinColumn(name = "professor_id"),
+            inverseJoinColumns = @JoinColumn(name = "course_id"))
+    private Set<Course> coursesTaught;
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(referencedColumnName = "id")
     private User user;

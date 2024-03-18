@@ -2,6 +2,7 @@ package ivanmartinez.simpleStudentsAPI.Utils;
 
 import ivanmartinez.simpleStudentsAPI.DTO.CreateProfessorRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.GetProfessorResponse;
+import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
@@ -10,7 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -43,9 +46,7 @@ class ProfessorUtilsTest {
     @Test
     void professorToGetProfessorResponse() {
         // Given
-        List<String> coursesTaught = new ArrayList<>();
-        coursesTaught.add("AI");
-        coursesTaught.add("ML&BD");
+        Set<Course> coursesTaught = new HashSet<>();;
 
         Professor professor = new Professor();
         professor.setId(1L);

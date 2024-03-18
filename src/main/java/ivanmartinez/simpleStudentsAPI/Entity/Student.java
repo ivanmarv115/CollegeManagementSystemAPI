@@ -21,8 +21,6 @@ public class Student {
     @JoinTable(name = "student_course_mapping", joinColumns = @JoinColumn(name = "student_id"),
         inverseJoinColumns = @JoinColumn(name = "course_id"))
     private Set<Course> courses;
-    //TODO: Delete this property once courses works correctly
-    private String course;
     private String degree;
     private String dateOfBirth;
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)

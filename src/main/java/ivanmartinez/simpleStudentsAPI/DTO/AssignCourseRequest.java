@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class IdRequest {
-    private Long id;
+public class AssignCourseRequest {
+    private Long professorId;
+    private Long courseId;
 }

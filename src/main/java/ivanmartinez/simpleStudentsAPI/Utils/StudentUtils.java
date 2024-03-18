@@ -8,6 +8,8 @@ import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
+
 @Component
 public class StudentUtils {
     @Value("${default.user.password}")
@@ -16,25 +18,15 @@ public class StudentUtils {
     public Student createStudentRequestToStudentEntity(CreateStudentRequest createStudentRequest){
 
         return Student.builder()
-                .course(createStudentRequest.getCourse())
                 .dateOfBirth(createStudentRequest.getDateOfBirth())
                 .degree(createStudentRequest.getDegree())
                 .lastName(createStudentRequest.getLastName())
                 .firstName(createStudentRequest.getFirstName())
+                .courses(new HashSet<>())
                 .build();
     }
 
-    public GetStudentsResponse studentEntityToStudentResponse(Student student){
-        return GetStudentsResponse.builder()
-                .id(student.getId())
-                .firstName(student.getFirstName())
-                .lastName(student.getLastName())
-                .dateOfBirth(student.getDateOfBirth())
-                .degree(student.getDegree())
-                .course(student.getCourse())
-                .username(student.getUser().getUsername())
-                .build();
-    }
+
 
     public CreateUserRequest createStudentRequestToCreateUserRequest(
             CreateStudentRequest createStudentRequest

@@ -2,7 +2,7 @@ package ivanmartinez.simpleStudentsAPI.Controller;
 
 import ivanmartinez.simpleStudentsAPI.DTO.CreateProfessorRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.GetProfessorResponse;
-import ivanmartinez.simpleStudentsAPI.DTO.IdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.UpdateProfessorRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
@@ -23,7 +23,7 @@ public class ProfessorController {
     private ProfessorService professorService;
 
     @GetMapping
-    public ResponseEntity<List<GetProfessorResponse>> getAllProfessors() {
+    public ResponseEntity<List<GetProfessorResponse>> getAllProfessors() throws CustomException {
         return professorService.getAllProfessors();
     }
 
@@ -35,7 +35,7 @@ public class ProfessorController {
 
     @PostMapping
     @Secured("ROLE_ADMIN")
-    public ResponseEntity<Professor> createProfessor
+    public ResponseEntity<Long> createProfessor
             (@RequestBody CreateProfessorRequest createProfessorRequest) throws CustomException {
         return professorService.createProfessor(createProfessorRequest);
     }
@@ -49,7 +49,7 @@ public class ProfessorController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Void> deleteProfessor(@RequestBody IdRequest idRequest) {
-        return professorService.deleteProfessor(idRequest);
+    public ResponseEntity<Void> deleteProfessor(@RequestBody LongIdRequest longIdRequest) {
+        return professorService.deleteProfessor(longIdRequest);
     }
 }

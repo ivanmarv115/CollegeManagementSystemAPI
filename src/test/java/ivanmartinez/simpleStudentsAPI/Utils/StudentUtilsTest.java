@@ -70,33 +70,4 @@ class StudentUtilsTest {
         assertThat(student).isEqualTo(expectedStudent);
     }
 
-    @Test
-    void shouldConvertToStudentResponse() {
-        // Given
-        Student student = Student.builder()
-                .id(1L)
-                .firstName("Ivan")
-                .lastName("Martinez")
-                .degree("Undergraduate")
-                .dateOfBirth("23/08/2001")
-                .course("Computer Science")
-                .user(User.builder().username("imartinez").build())
-                .build();
-
-        GetStudentsResponse expectedResponse = GetStudentsResponse.builder()
-                .id(1L)
-                .firstName("Ivan")
-                .lastName("Martinez")
-                .degree("Undergraduate")
-                .dateOfBirth("23/08/2001")
-                .course("Computer Science")
-                .username("imartinez")
-                .build();
-
-        // When
-        GetStudentsResponse studentResponse = underTest.studentEntityToStudentResponse(student);
-
-        // Then
-        assertThat(studentResponse).isEqualTo(expectedResponse);
-    }
 }

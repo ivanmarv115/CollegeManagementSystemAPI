@@ -1,7 +1,12 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
+import ivanmartinez.simpleStudentsAPI.DTO.CreateCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.UpdateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -10,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,21 +25,89 @@ public class CourseServiceImpl implements CourseService{
 
     Logger logger = LoggerFactory.getLogger(CourseService.class);
     @Override
-    public ResponseEntity<Long> createCourse(Course course) throws CustomException {
+    public ResponseEntity<Long> createCourse(CreateCourseRequest request) throws CustomException {
         try {
             logger.info("***** CREATE COURSE *****");
-            logger.info("New course: " + course);
+            logger.info("New course: " + request);
 
-            if(courseRepository.existsByCode(course.getCode())){
-                logger.warn("Course with code " + course.getCode() + " already exists");
-                throw new CustomException("Course with code " + course.getCode() + " already exists",
-                        HttpStatus.BAD_REQUEST);
+            if(courseRepository.existsByCode(request.getCode())){
+                logger.warn("Course with code " + request.getCode() + " already exists");
+                throw new ResourceAlreadyExistsException("Course with code " +
+                        request.getCode() + " already exists");
             }
 
+            Course course = createCourseRequestToCourseEntity(request);
+            logger.info("COURSE CREATED");
             return new ResponseEntity<>(courseRepository.save(course).getId(), HttpStatus.CREATED);
         }catch (RuntimeException ex){
             logger.error(ex.getMessage());
             throw new CustomException(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    private Course createCourseRequestToCourseEntity(CreateCourseRequest request){
+        return Course.builder()
+                .name(request.getName())
+                .code(request.getCode())
+                .degree(request.getDegree())
+                .year(request.getYear())
+                .build();
+    }
+
+    @Override
+    public ResponseEntity<List<Course>> getAllCourses() throws CustomException {
+        try {
+            logger.info("***** GET ALL COURSES *****");
+            List<Course> courses = courseRepository.findAll();
+            logger.info("SUCCESS");
+            return new ResponseEntity<>(courses, HttpStatus.OK);
+        }catch (RuntimeException ex){
+            logger.error(ex.getMessage());
+            throw new CustomException(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<String> deleteCourse(LongIdRequest longIdRequest) throws CustomException {
+
+        try{
+            logger.info("***** DELETE COURSE *****");
+            logger.info("id: " + longIdRequest.getLongId());
+            if(!courseRepository.existsById(longIdRequest.getLongId())){
+                logger.warn("Course does not exists");
+                throw new ResourceNotFoundException("Course does not exists");
+            }
+            courseRepository.deleteById(longIdRequest.getLongId());
+            logger.info("DELETED");
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Course Deleted");
+        }catch (RuntimeException exception){
+            logger.error(exception.getMessage());
+            throw new CustomException(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<String> updateCourse(UpdateCourseRequest requestCourse) throws CustomException {
+        try{
+            logger.info("***** UPDATE COURSE *****");
+            logger.info("New Course: " + requestCourse);
+            if(!courseRepository.existsById(requestCourse.getId())){
+                logger.warn("Course does not exists");
+                throw new ResourceNotFoundException("Course does not exists");
+            }
+            Course courseToUpdate = courseRepository.findById(requestCourse.getId()).get();
+            logger.info("Course to udpate: " + courseToUpdate);
+
+            courseToUpdate.setName(requestCourse.getName());
+            courseToUpdate.setCode(requestCourse.getCode());
+            courseToUpdate.setYear(requestCourse.getYear());
+            courseToUpdate.setDegree(requestCourse.getDegree());
+            courseRepository.save(courseToUpdate);
+            logger.info("UPDATED");
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Course updated");
+        }catch (RuntimeException exception){
+            throw new CustomException(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

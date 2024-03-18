@@ -1,15 +1,19 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
 import ivanmartinez.simpleStudentsAPI.DTO.*;
+import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Entity.User;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
+import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.ProfessorRepository;
+import ivanmartinez.simpleStudentsAPI.Repository.UserRepository;
 import ivanmartinez.simpleStudentsAPI.Utils.ProfessorUtils;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,21 +29,29 @@ public class ProfessorServiceImpl implements ProfessorService{
     private final ProfessorRepository professorRepository;
     private final ProfessorUtils professorUtils;
     private final UserService userService;
+    private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
 
     Logger logger = LoggerFactory.getLogger(ProfessorService.class);
 
     @Override
-    public ResponseEntity<List<GetProfessorResponse>> getAllProfessors() {
-        logger.info("***** GET PROFESSORS CALLED *****");
-        List<Professor> professors = professorRepository.findAll();
-        List<GetProfessorResponse> responses = new ArrayList<>();
+    public ResponseEntity<List<GetProfessorResponse>> getAllProfessors() throws CustomException {
+        try {
+            logger.info("***** GET PROFESSORS CALLED *****");
+            List<Professor> professors = professorRepository.findAll();
+            List<GetProfessorResponse> responses = new ArrayList<>();
 
-        for (Professor professor : professors){
-            responses.add(professorUtils.
-                    professorToGetProfessorResponse(professor));
+            for (Professor professor : professors) {
+                responses.add(professorUtils.
+                        professorToGetProfessorResponse(professor));
+            }
+
+            return new ResponseEntity<>(responses, HttpStatus.OK);
+        }catch (RuntimeException exception){
+            logger.error(exception.getMessage());
+            throw new CustomException("Could not get professors",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
     @Override
@@ -48,15 +60,20 @@ public class ProfessorServiceImpl implements ProfessorService{
     }
 
     @Override
-    public ResponseEntity<Professor> createProfessor(CreateProfessorRequest createProfessorRequest) throws CustomException {
+    public ResponseEntity<Long> createProfessor(CreateProfessorRequest createProfessorRequest) throws CustomException {
         try {
             logger.info("***** CREATE PROFESSOR BEGIN *****");
             logger.info("Request: " + createProfessorRequest);
+            if(userRepository.findByUsername(createProfessorRequest.getUsername())
+                    .isPresent()){
+                logger.warn("Username already exists");
+                throw new ResourceAlreadyExistsException("Username already exists");
+            }
+
             Professor professor = professorUtils
                     .createProfessorRequestToProfessorEntity(
                             createProfessorRequest
                     );
-
             logger.info("Creating new user");
             CreateUserRequest createUserRequest = professorUtils
                     .createProfessorRequestToCreateUserRequest(
@@ -65,10 +82,10 @@ public class ProfessorServiceImpl implements ProfessorService{
             User user = userService.createUser(createUserRequest);
             professor.setUser(user);
 
-            professorRepository.save(professor);
+            professor = professorRepository.save(professor);
             logger.info("New professor saved");
             logger.info("***** CREATE PROFESSOR END *****");
-            return new ResponseEntity<>(professor, HttpStatus.CREATED);
+            return new ResponseEntity<>(professor.getId(), HttpStatus.CREATED);
         }catch (RuntimeException ex){
             logger.error("ERROR WHEN TRYING TO CREATE PROFESSOR");
             throw new CustomException(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -85,7 +102,7 @@ public class ProfessorServiceImpl implements ProfessorService{
             );
             if (professorOptional.isEmpty()) {
                 logger.warn("Professor with requested id does not exist");
-                throw new CustomException("Professor not found", HttpStatus.NOT_FOUND);
+                throw new ResourceNotFoundException("Professor not found");
             }
             Professor professor = professorOptional.get();
             logger.info("Previous professor: " + professor);
@@ -104,7 +121,40 @@ public class ProfessorServiceImpl implements ProfessorService{
     }
 
     @Override
-    public ResponseEntity<Void> deleteProfessor(IdRequest id) {
+    public ResponseEntity<Void> deleteProfessor(LongIdRequest id) {
         return null;
+    }
+
+    @Override
+    public ResponseEntity<String> assignCourse(AssignCourseRequest request) throws CustomException {
+        try{
+            logger.info("***** ASSIGN COURSE *****");
+            logger.info("Request: " + request);
+            Optional<Professor> professorOptional = professorRepository.findById(request.getProfessorId());
+            if(professorOptional.isEmpty()){
+                logger.warn("Professor not found");
+                throw new ResourceNotFoundException("Professor not found");
+            }
+
+            Optional<Course> courseOptional = courseRepository.findById(request.getCourseId());
+            if (courseOptional.isEmpty()){
+                logger.warn("Course not found");
+                throw new ResourceNotFoundException("Course not found");
+            }
+
+            Professor professor = professorOptional.get();
+            Course course = courseOptional.get();
+
+            professor.getCoursesTaught().add(course);
+            course.getProfessors().add(professor);
+            professorRepository.save(professor);
+            courseRepository.save(course);
+
+            logger.info("SUCCESS");
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Assigned successfully");
+        } catch (RuntimeException exception){
+            logger.error(exception.getMessage());
+            throw new CustomException("Could not assign course", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

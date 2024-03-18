@@ -8,6 +8,8 @@ import ivanmartinez.simpleStudentsAPI.Entity.Role;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
+
 @Component
 public class ProfessorUtils {
 
@@ -19,6 +21,7 @@ public class ProfessorUtils {
         return Professor.builder()
                 .firstName(createProfessorRequest.getFirstName())
                 .lastName(createProfessorRequest.getLastName())
+                .coursesTaught(new HashSet<>())
                 .build();
     }
 

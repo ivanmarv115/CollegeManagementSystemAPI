@@ -1,28 +1,29 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CreateProfessorRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.GetProfessorResponse;
-import ivanmartinez.simpleStudentsAPI.DTO.UpdateProfessorRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.*;
+import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
 import ivanmartinez.simpleStudentsAPI.Entity.User;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
+import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.ProfessorRepository;
+import ivanmartinez.simpleStudentsAPI.Repository.UserRepository;
 import ivanmartinez.simpleStudentsAPI.Utils.ProfessorUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -34,23 +35,23 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class ProfessorServiceTest {
 
+    @InjectMocks
     private ProfessorServiceImpl underTest;
     @Mock
     private UserService userService;
     @Mock
     private ProfessorRepository professorRepository;
     @Mock
-    ProfessorUtils professorUtils;
+    private ProfessorUtils professorUtils;
+    @Mock
+    private CourseRepository courseRepository;
+    @Mock
+    private UserRepository userRepository;
     @Value("${default.user.password}")
     private String defaultPassword;
 
-    @BeforeEach
-    void setUp(){
-        underTest = new ProfessorServiceImpl(professorRepository,  professorUtils, userService);
-    }
-
     @Test
-    void shouldGetAllProfessors() {
+    void shouldGetAllProfessors() throws CustomException {
         //given
         User user = User.builder()
                 .username("imartinezprof")
@@ -112,22 +113,52 @@ class ProfessorServiceTest {
                 .user(user)
                 .build();
 
+        Professor returnedProfessor = Professor.builder()
+                .id(1L)
+                .firstName("Ivan")
+                .lastName("Martinez")
+                .user(user)
+                .build();
+
+        given(userRepository.findByUsername(createProfessorRequest.getUsername())).willReturn(
+                Optional.empty()
+        );
         given(professorUtils.createProfessorRequestToProfessorEntity(createProfessorRequest))
                 .willReturn(professor);
         given(userService.createUser(createUserRequest)).willReturn(user);
         given(professorUtils.createProfessorRequestToCreateUserRequest(createProfessorRequest))
                 .willReturn(createUserRequest);
+        given(professorRepository.save(professor)).willReturn(returnedProfessor);
 
         //when
         underTest.createProfessor(createProfessorRequest);
 
         //test
-        ArgumentCaptor<Professor> professorArgumentCaptor =
-                ArgumentCaptor.forClass(Professor.class);
+        verify(professorRepository).save(professor);
+    }
 
-        verify(professorRepository).save(professorArgumentCaptor.capture());
-        Professor capturedProfessor = professorArgumentCaptor.getValue();
-        assertThat(capturedProfessor).isEqualTo(professor);
+    @Test
+    void shouldThrowAlreadyExistsOnCreate() throws CustomException {
+        //given
+        CreateProfessorRequest createProfessorRequest = CreateProfessorRequest.builder()
+                .firstName("Ivan")
+                .lastName("Martinez")
+                .username("imartinezprof")
+                .build();
+
+        User userFound = User.builder()
+                .username("imartinezprof")
+                .build();
+
+        given(userRepository.findByUsername(createProfessorRequest.getUsername()))
+                .willReturn(Optional.of(userFound));
+
+        //test
+        assertThatThrownBy(() -> underTest.createProfessor(createProfessorRequest))
+                .isInstanceOf(ResourceAlreadyExistsException.class)
+                .hasMessageContaining("Username already exists");
+
+        verify(professorRepository, never()).save(any());
     }
 
     @Test
@@ -169,12 +200,7 @@ class ProfessorServiceTest {
         underTest.updateProfessor(updateProfessorRequest);
 
         //test
-        ArgumentCaptor<Professor> professorArgumentCaptor =
-                ArgumentCaptor.forClass(Professor.class);
-
-        verify(professorRepository).save(professorArgumentCaptor.capture());
-        Professor capturedProfessor = professorArgumentCaptor.getValue();
-        assertThat(capturedProfessor).isEqualTo(expectedProfessor);
+        verify(professorRepository).save(expectedProfessor);
     }
 
     @Test
@@ -194,12 +220,72 @@ class ProfessorServiceTest {
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining("Professor not found");
 
-        verify(professorRepository, never()).delete(any());
+        verify(professorRepository, never()).save(any());
     }
 
 
     @Test
     @Disabled
     void shouldDeleteProfessor() {
+    }
+
+    @Test
+    void shouldAssignCourse() throws CustomException {
+        //given
+        AssignCourseRequest request = AssignCourseRequest.builder()
+                .professorId(1L)
+                .courseId(1L)
+                .build();
+
+        User user = User.builder()
+                .username("imartinezprof")
+                .role(Role.PROFESSOR)
+                .build();
+
+        Professor professorFound = Professor.builder()
+                .firstName("Ivan")
+                .lastName("Martinez")
+                .user(user)
+                .coursesTaught(new HashSet<>())
+                .build();
+
+        Course courseFound = Course.builder()
+                .id(1L)
+                .code("M101")
+                .name("Math 101")
+                .degree("Degree")
+                .year("1")
+                .students(new HashSet<>())
+                .professors(new HashSet<>())
+                .build();
+
+        Professor expectedNewProfessor = Professor.builder()
+                .firstName("Ivan")
+                .lastName("Martinez")
+                .user(user)
+                .coursesTaught(Set.of(courseFound))
+                .build();
+
+        Course expectedNewCourse = Course.builder()
+                .id(1L)
+                .code("M101")
+                .name("Math 101")
+                .degree("Degree")
+                .year("1")
+                .students(new HashSet<>())
+                .professors(Set.of(professorFound))
+                .build();
+
+        given(professorRepository.findById(request.getProfessorId()))
+                .willReturn(Optional.of(professorFound));
+        given(courseRepository.findById(request.getCourseId()))
+                .willReturn(Optional.of(courseFound));
+
+        //when
+        underTest.assignCourse(request);
+
+        //test
+        verify(professorRepository).save(expectedNewProfessor);
+        verify(courseRepository).save(expectedNewCourse);
     }
 }

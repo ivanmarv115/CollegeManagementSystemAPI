@@ -25,4 +25,9 @@ public class Course {
     @ToString.Exclude
     private Set<Student> students;
 
+    @ManyToMany(mappedBy = "coursesTaught")
+    @JsonIgnore
+    @ToString.Exclude
+    private Set<Professor> professors;
+
 }

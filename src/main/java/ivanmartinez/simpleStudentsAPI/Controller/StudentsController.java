@@ -2,23 +2,17 @@ package ivanmartinez.simpleStudentsAPI.Controller;
 
 import ivanmartinez.simpleStudentsAPI.DTO.CreateStudentRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.GetStudentsResponse;
-import ivanmartinez.simpleStudentsAPI.DTO.IdRequest;
-import ivanmartinez.simpleStudentsAPI.Entity.Role;
+import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.StudentCourseEnrollRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Service.StudentService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -30,7 +24,7 @@ public class StudentsController {
     private StudentService studentService;
 
     @GetMapping
-    public ResponseEntity<List<GetStudentsResponse>> getAllStudents(){
+    public ResponseEntity<List<GetStudentsResponse>> getAllStudents() throws CustomException {
         return studentService.getAllStudents();
     }
 
@@ -54,9 +48,9 @@ public class StudentsController {
     @Secured("ROLE_ADMIN")
     @DeleteMapping
     public ResponseEntity<String> deleteStudent(
-            @RequestBody IdRequest idRequest
+            @RequestBody LongIdRequest longIdRequest
             ) throws CustomException {
-        return studentService.deleteStudent(idRequest);
+        return studentService.deleteStudent(longIdRequest);
     }
 
     @Secured("ROLE_ADMIN")
@@ -67,18 +61,11 @@ public class StudentsController {
         return studentService.updateStudent(student);
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
-
-        Map<String, String> errors = new HashMap<>();
-
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-
-        return errors;
+    @Secured("ROLE_ADMIN")
+    @PatchMapping("/enroll")
+    public ResponseEntity<String> enrollStudent(
+            @RequestBody StudentCourseEnrollRequest request) throws CustomException {
+        return studentService.enrollToCourse(request);
     }
+
 }
