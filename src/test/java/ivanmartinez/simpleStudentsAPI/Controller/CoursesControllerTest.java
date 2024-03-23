@@ -76,7 +76,6 @@ class CoursesControllerTest {
                 .id(1L)
                 .code("M101")
                 .name("Math 101")
-                .degree("Degree")
                 .semester(1)
                 .build());
 

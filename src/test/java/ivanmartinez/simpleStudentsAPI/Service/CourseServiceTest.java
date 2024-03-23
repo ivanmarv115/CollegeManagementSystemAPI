@@ -47,7 +47,6 @@ class CourseServiceTest {
         Course courseToCreate = Course.builder()
                 .code("M101")
                 .name("Math 101")
-                .degree("Degree")
                 .semester(1)
                 .build();
 
@@ -55,7 +54,6 @@ class CourseServiceTest {
                 .id(1L)
                 .code("M101")
                 .name("Math 101")
-                .degree("Degree")
                 .semester(1)
                 .build();
 
@@ -116,7 +114,6 @@ class CourseServiceTest {
                 .id(1L)
                 .code("M101")
                 .name("Mathematics 101")
-                .degree("Degree")
                 .semester(1)
                 .build();
 
@@ -124,7 +121,6 @@ class CourseServiceTest {
                 .id(1L)
                 .code("M101")
                 .name("Math 101")
-                .degree("Degree")
                 .semester(1)
                 .build());
 
@@ -149,7 +145,6 @@ class CourseServiceTest {
                 .id(1L)
                 .code("M101")
                 .name("Math 101")
-                .degree("Degree")
                 .semester(1)
                 .coursesPrerequisites(new HashSet<>())
                 .build());
@@ -158,7 +153,6 @@ class CourseServiceTest {
                 .id(2L)
                 .code("M200")
                 .name("Intermediate Maths")
-                .degree("Degree")
                 .semester(1)
                 .build());
 

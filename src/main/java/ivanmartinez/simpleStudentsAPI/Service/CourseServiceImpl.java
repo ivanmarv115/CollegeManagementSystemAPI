@@ -52,7 +52,6 @@ public class CourseServiceImpl implements CourseService{
         return Course.builder()
                 .name(request.getName())
                 .code(request.getCode())
-                .degree(request.getDegree())
                 .semester(request.getSemester())
                 .students(new HashSet<>())
                 .coursesPrerequisites(new HashSet<>())
@@ -106,7 +105,6 @@ public class CourseServiceImpl implements CourseService{
             courseToUpdate.setName(requestCourse.getName());
             courseToUpdate.setCode(requestCourse.getCode());
             courseToUpdate.setSemester(requestCourse.getSemester());
-            courseToUpdate.setDegree(requestCourse.getDegree());
             courseRepository.save(courseToUpdate);
             logger.info("UPDATED");
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("Course updated");

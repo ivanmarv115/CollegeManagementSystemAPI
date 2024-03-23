@@ -5,15 +5,19 @@ import ivanmartinez.simpleStudentsAPI.DTO.Degrees.DegreeIdCourseIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Degree;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
+import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.DegreeRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -22,6 +26,8 @@ import static org.mockito.Mockito.verify;
 class DegreeServiceTest {
     @Mock
     private DegreeRepository degreeRepository;
+    @Mock
+    private CourseRepository courseRepository;
     @InjectMocks
     private DegreeServiceImpl underTest;
 
@@ -65,7 +71,7 @@ class DegreeServiceTest {
     }
 
     @Test
-    void shouldAddRequiredCourseToDegree(){
+    void shouldAddRequiredCourseToDegree() throws ResourceNotFoundException {
         DegreeIdCourseIdRequest request = DegreeIdCourseIdRequest.builder()
                 .degreeId(1L)
                 .courseId(1L)
@@ -82,5 +88,51 @@ class DegreeServiceTest {
                 .code("M101")
                 .name("Math 101")
                 .build();
+
+        given(degreeRepository.findById(request.getDegreeId())).willReturn(Optional.of(degree));
+        given(courseRepository.findById(request.getCourseId())).willReturn(Optional.of(course));
+
+        //when
+        underTest.addRequiredCourse(request);
+
+        //test
+        ArgumentCaptor<Degree> degreeArgumentCaptor = ArgumentCaptor.forClass(Degree.class);
+
+        verify(degreeRepository).save(degreeArgumentCaptor.capture());
+        Degree capturedDegree = degreeArgumentCaptor.getValue();
+        assertThat(capturedDegree.getRequiredCourses()).isEqualTo(Set.of(course));
+    }
+
+    @Test
+    void shouldAddOptionalCourseToDegree() throws ResourceNotFoundException {
+        DegreeIdCourseIdRequest request = DegreeIdCourseIdRequest.builder()
+                .degreeId(1L)
+                .courseId(1L)
+                .build();
+
+        Degree degree = Degree.builder()
+                .id(1L)
+                .name("Computer Science Engineering")
+                .optionalCourses(new HashSet<>())
+                .build();
+
+        Course course = Course.builder()
+                .id(1L)
+                .code("M101")
+                .name("Math 101")
+                .build();
+
+        given(degreeRepository.findById(request.getDegreeId())).willReturn(Optional.of(degree));
+        given(courseRepository.findById(request.getCourseId())).willReturn(Optional.of(course));
+
+        //when
+        underTest.addRequiredCourse(request);
+
+        //test
+        ArgumentCaptor<Degree> degreeArgumentCaptor = ArgumentCaptor.forClass(Degree.class);
+
+        verify(degreeRepository).save(degreeArgumentCaptor.capture());
+        Degree capturedDegree = degreeArgumentCaptor.getValue();
+        assertThat(capturedDegree.getOptionalCourses()).isEqualTo(Set.of(course));
     }
 }
