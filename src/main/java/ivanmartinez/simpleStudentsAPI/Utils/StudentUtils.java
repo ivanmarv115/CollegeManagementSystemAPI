@@ -1,8 +1,7 @@
 package ivanmartinez.simpleStudentsAPI.Utils;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CreateStudentRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.GetStudentsResponse;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,10 +18,10 @@ public class StudentUtils {
 
         return Student.builder()
                 .dateOfBirth(createStudentRequest.getDateOfBirth())
-                .degree(createStudentRequest.getDegree())
                 .lastName(createStudentRequest.getLastName())
                 .firstName(createStudentRequest.getFirstName())
-                .courses(new HashSet<>())
+                .currentCourses(new HashSet<>())
+                .passedCourses(new HashSet<>())
                 .build();
     }
 

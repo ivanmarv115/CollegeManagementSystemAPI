@@ -1,11 +1,9 @@
 package ivanmartinez.simpleStudentsAPI.Utils;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CreateStudentRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.GetStudentsResponse;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
-import ivanmartinez.simpleStudentsAPI.Entity.User;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,7 +57,6 @@ class StudentUtilsTest {
         Student expectedStudent = Student.builder()
                 .firstName("Ivan")
                 .lastName("Martinez")
-                .degree("Undergraduate")
                 .dateOfBirth("23/08/2001")
                 .build();
 

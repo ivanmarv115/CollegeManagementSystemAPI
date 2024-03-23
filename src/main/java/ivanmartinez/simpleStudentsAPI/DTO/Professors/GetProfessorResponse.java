@@ -1,4 +1,4 @@
-package ivanmartinez.simpleStudentsAPI.DTO;
+package ivanmartinez.simpleStudentsAPI.DTO.Professors;
 
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import lombok.Builder;

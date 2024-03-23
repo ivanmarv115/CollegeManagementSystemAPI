@@ -9,9 +9,8 @@ import java.util.Optional;
 
 @Repository
 public interface StudentsRepository extends JpaRepository<Student, Long> {
-    List<Student> findByFirstNameContainingAndLastNameContainingAndCourseContaining(
+    List<Student> findByFirstNameContainingAndLastNameContaining(
             String firstName,
-            String lastName,
-            String course
+            String lastName
     );
 }

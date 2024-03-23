@@ -1,4 +1,4 @@
-package ivanmartinez.simpleStudentsAPI.DTO;
+package ivanmartinez.simpleStudentsAPI.DTO.Courses;
 
 import lombok.Builder;
 import lombok.Data;
@@ -8,6 +8,6 @@ import lombok.Data;
 public class CreateCourseRequest {
     private String name;
     private String code;
-    private String year;
+    private Integer semester;
     private String degree;
 }

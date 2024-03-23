@@ -1,8 +1,9 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CreateCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.AddCoursePrerequisiteRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.UpdateCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
@@ -15,7 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +53,9 @@ public class CourseServiceImpl implements CourseService{
                 .name(request.getName())
                 .code(request.getCode())
                 .degree(request.getDegree())
-                .year(request.getYear())
+                .semester(request.getSemester())
+                .students(new HashSet<>())
+                .coursesPrerequisites(new HashSet<>())
                 .build();
     }
 
@@ -100,7 +105,7 @@ public class CourseServiceImpl implements CourseService{
 
             courseToUpdate.setName(requestCourse.getName());
             courseToUpdate.setCode(requestCourse.getCode());
-            courseToUpdate.setYear(requestCourse.getYear());
+            courseToUpdate.setSemester(requestCourse.getSemester());
             courseToUpdate.setDegree(requestCourse.getDegree());
             courseRepository.save(courseToUpdate);
             logger.info("UPDATED");
@@ -109,5 +114,30 @@ public class CourseServiceImpl implements CourseService{
             throw new CustomException(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @Override
+    public ResponseEntity<String> addCoursePrerequisite(AddCoursePrerequisiteRequest request) throws ResourceNotFoundException {
+        logger.info("***** ADD PREREQUISITE COURSE *****");
+        logger.info("Request: " + request);
+        Optional<Course> courseOptional = courseRepository.findById(request.getCourseId());
+        if (courseOptional.isEmpty()){
+            logger.warn("Course not found");
+            throw new ResourceNotFoundException("Course not found");
+        }
+        Course course = courseOptional.get();
+
+        Optional<Course> coursePrerequisiteOptional = courseRepository.findById(request.getPrerequisiteCourseId());
+        if (coursePrerequisiteOptional.isEmpty()){
+            logger.warn("Prerequisite course not found");
+            throw new ResourceNotFoundException("Prerequisite course not found");
+        }
+        logger.info("Resources found");
+
+        course.getCoursesPrerequisites().add(coursePrerequisiteOptional.get());
+        courseRepository.save(course);
+        logger.info("***** SUCCESS *****");
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Successfully added prerequisite");
+    }
+
 
 }

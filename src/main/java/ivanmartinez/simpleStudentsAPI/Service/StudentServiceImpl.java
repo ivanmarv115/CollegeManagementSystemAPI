@@ -1,10 +1,14 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
 import ivanmartinez.simpleStudentsAPI.DTO.*;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.GetStudentsResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdCourseIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Entity.User;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
+import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
@@ -25,11 +29,11 @@ import java.util.*;
 public class StudentServiceImpl implements StudentService{
 
     private final StudentsRepository studentsRepository;
-    Logger logger  = LoggerFactory.getLogger(StudentServiceImpl.class);
     private final StudentUtils studentUtils;
     private final UserService userService;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
+    Logger logger  = LoggerFactory.getLogger(StudentServiceImpl.class);
 
     @Override
     public ResponseEntity<String> createStudent(CreateStudentRequest createStudentRequest) throws CustomException {
@@ -88,8 +92,10 @@ public class StudentServiceImpl implements StudentService{
                 .firstName(student.getFirstName())
                 .lastName(student.getLastName())
                 .dateOfBirth(student.getDateOfBirth())
-                .degree(student.getDegree())
-                .courses(student.getCourses())
+                .degree(student.getDegree().getName())
+                .semester(student.getSemester())
+                .currentCourses(student.getCurrentCourses())
+                .passedCourses(student.getPassedCourses())
                 .username(student.getUser().getUsername())
                 .build();
     }
@@ -107,8 +113,7 @@ public class StudentServiceImpl implements StudentService{
                 + " LM: " + lastName + " C: " + course);
 
         List<Student> students = studentsRepository
-                .findByFirstNameContainingAndLastNameContainingAndCourseContaining
-                        (firstName, lastName, course);
+                .findByFirstNameContainingAndLastNameContaining(firstName, lastName);
 
         if(!students.isEmpty()){
             logger.info("***** FOUND STUDENTS *****");
@@ -135,6 +140,7 @@ public class StudentServiceImpl implements StudentService{
                 throw new ResourceNotFoundException("Student does not exist");
             }
         }catch (RuntimeException ex){
+            logger.error(ex.getMessage());
             throw new CustomException("Could not delete the student", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -171,34 +177,74 @@ public class StudentServiceImpl implements StudentService{
     }
 
     @Override
-    public ResponseEntity<String> enrollToCourse(StudentCourseEnrollRequest request) throws CustomException {
-        try{
-            logger.info("***** STUDENT ENROLL *****");
-            logger.info("Request: " + request);
-            Optional<Student> studentOptional = studentsRepository.findById(request.getStudentId());
-            if(studentOptional.isEmpty()){
-                logger.warn("Student not found");
-                throw new ResourceNotFoundException("Student not found");
-            }
-            Student student = studentOptional.get();
-
-            Optional<Course> courseOptional = courseRepository.findById(request.getCourseId());
-            if (courseOptional.isEmpty()){
-                logger.warn("Course not found");
-                throw new ResourceNotFoundException("Course not found");
-            }
-            Course course = courseOptional.get();
-
-            student.getCourses().add(course);
-            course.getStudents().add(student);
-            studentsRepository.save(student);
-            courseRepository.save(course);
-            logger.info("SUCCESS");
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Enrolled successfully");
-        }catch (Exception exception){
-            logger.error(exception.getMessage());
-            throw new CustomException("Could not enroll student", HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<String> enrollToCourse(StudentIdCourseIdRequest request) throws CustomException {
+        logger.info("***** STUDENT ENROLL *****");
+        logger.info("Request: " + request);
+        Optional<Student> studentOptional = studentsRepository.findById(request.getStudentId());
+        if(studentOptional.isEmpty()){
+            logger.warn("Student not found");
+            throw new ResourceNotFoundException("Student not found");
         }
+        Student student = studentOptional.get();
+
+        Optional<Course> courseOptional = courseRepository.findById(request.getCourseId());
+        if (courseOptional.isEmpty()){
+            logger.warn("Course not found");
+            throw new ResourceNotFoundException("Course not found");
+        }
+        Course course = courseOptional.get();
+        logger.info("Resources found");
+
+        if(student.getSemester() < course.getSemester()){
+            logger.warn("Student needs more semesters!");
+            throw new InvalidRequestException("Student needs more semesters!");
+        }
+
+        if(!student.getPassedCourses().containsAll(course.getCoursesPrerequisites())){
+            logger.warn("Student does not meets course prerequisites");
+            throw new InvalidRequestException("Student does not meets course prerequisites");
+        }
+        logger.info("Student meets demands");
+
+        student.getCurrentCourses().add(course);
+        course.getStudents().add(student);
+        studentsRepository.save(student);
+        courseRepository.save(course);
+        logger.info("***** SUCCESSFULLY ENROLLED *****");
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Enrolled successfully");
     }
+
+    @Override
+    public ResponseEntity<String> addPassedCourse(StudentIdCourseIdRequest request)
+            throws InvalidRequestException, ResourceNotFoundException {
+        logger.info("***** ADD PASSED COURSE *****");
+        logger.info("Request: " + request);
+        Optional<Student> studentOptional = studentsRepository.findById(request.getStudentId());
+        if(studentOptional.isEmpty()){
+            logger.warn("Student not found");
+            throw new ResourceNotFoundException("Student not found");
+        }
+        Student student = studentOptional.get();
+
+        Optional<Course> courseOptional = courseRepository.findById(request.getCourseId());
+        if (courseOptional.isEmpty()){
+            logger.warn("Course not found");
+            throw new ResourceNotFoundException("Course not found");
+        }
+        Course course = courseOptional.get();
+        logger.info("Resources found");
+
+        if(!student.getCurrentCourses().contains(course)){
+            logger.warn("Student is not enrolled to this course");
+            throw new InvalidRequestException("Student is not enrolled to this course");
+        }
+
+        student.getPassedCourses().add(course);
+        student.getCurrentCourses().remove(course);
+        studentsRepository.save(student);
+        logger.info("***** ADDED PASSED COURSE SUCCESSFULLY *****");
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Added successfully");
+    }
+
 
 }

@@ -2,10 +2,11 @@ package ivanmartinez.simpleStudentsAPI.Controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ivanmartinez.simpleStudentsAPI.Config.JwtService;
-import ivanmartinez.simpleStudentsAPI.DTO.CreateProfessorRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.GetProfessorResponse;
-import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.UpdateProfessorRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.*;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.AssignCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.CreateProfessorRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.GetProfessorResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.UpdateProfessorRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Service.ProfessorService;
 import org.junit.jupiter.api.BeforeEach;
@@ -156,5 +157,25 @@ class ProfessorControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void shouldAssignCourse() throws Exception {
+        //Given
+        AssignCourseRequest request = AssignCourseRequest.builder()
+                .courseId(1L)
+                .professorId(1L)
+                .build();
+
+        String response = "Assigned successfully";
+
+        given(professorService.assignCourse(request)).willReturn(
+                ResponseEntity.status(HttpStatus.ACCEPTED).body(response));
+        //Test
+        mockMvc.perform(patch("/professors/assign")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isAccepted())
+                .andExpect(content().string(response));
     }
 }

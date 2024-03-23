@@ -1,6 +1,10 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
 import ivanmartinez.simpleStudentsAPI.DTO.*;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.AssignCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.CreateProfessorRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.GetProfessorResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.UpdateProfessorRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
@@ -12,10 +16,11 @@ import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.ProfessorRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.UserRepository;
 import ivanmartinez.simpleStudentsAPI.Utils.ProfessorUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -29,8 +34,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProfessorServiceTest {
@@ -237,44 +241,18 @@ class ProfessorServiceTest {
                 .courseId(1L)
                 .build();
 
-        User user = User.builder()
-                .username("imartinezprof")
-                .role(Role.PROFESSOR)
-                .build();
-
         Professor professorFound = Professor.builder()
                 .firstName("Ivan")
                 .lastName("Martinez")
-                .user(user)
                 .coursesTaught(new HashSet<>())
                 .build();
 
         Course courseFound = Course.builder()
                 .id(1L)
-                .code("M101")
-                .name("Math 101")
-                .degree("Degree")
-                .year("1")
-                .students(new HashSet<>())
+                .semester(1)
                 .professors(new HashSet<>())
                 .build();
 
-        Professor expectedNewProfessor = Professor.builder()
-                .firstName("Ivan")
-                .lastName("Martinez")
-                .user(user)
-                .coursesTaught(Set.of(courseFound))
-                .build();
-
-        Course expectedNewCourse = Course.builder()
-                .id(1L)
-                .code("M101")
-                .name("Math 101")
-                .degree("Degree")
-                .year("1")
-                .students(new HashSet<>())
-                .professors(Set.of(professorFound))
-                .build();
 
         given(professorRepository.findById(request.getProfessorId()))
                 .willReturn(Optional.of(professorFound));
@@ -285,7 +263,43 @@ class ProfessorServiceTest {
         underTest.assignCourse(request);
 
         //test
-        verify(professorRepository).save(expectedNewProfessor);
-        verify(courseRepository).save(expectedNewCourse);
+        ArgumentCaptor<Professor> professorArgumentCaptor = ArgumentCaptor.forClass(Professor.class);
+        ArgumentCaptor<Course> courseArgumentCaptor = ArgumentCaptor.forClass(Course.class);
+
+        verify(professorRepository).save(professorArgumentCaptor.capture());
+        assertThat(professorArgumentCaptor.getValue().getCoursesTaught())
+                .isEqualTo(Set.of(courseFound));
+
+        verify(courseRepository).save(courseArgumentCaptor.capture());
+        assertThat(courseArgumentCaptor.getValue().getProfessors())
+                .isEqualTo(Set.of(professorFound));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "true, false, Course not found",
+            "false, true, Professor not found"
+    })
+    void should404OnAssign(boolean isProfessorFound, boolean isCourseFound, String expectedMsg) {
+        // given
+        AssignCourseRequest request = AssignCourseRequest.builder()
+                .professorId(1L)
+                .courseId(1L)
+                .build();
+
+        Optional<Professor> professorFound = isProfessorFound ? Optional.of(new Professor()) : Optional.empty();
+        Optional<Course> courseFound = isCourseFound ? Optional.of(new Course()) : Optional.empty();
+
+        lenient().when(professorRepository.findById(request.getProfessorId()))
+                .thenReturn(professorFound);
+        lenient().when(courseRepository.findById(request.getCourseId()))
+                .thenReturn(courseFound);
+
+        // test
+        assertThatThrownBy(() -> underTest.assignCourse(request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining(expectedMsg);
+
+        verify(professorRepository, never()).save(any());
     }
 }

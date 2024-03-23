@@ -1,6 +1,10 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
 import ivanmartinez.simpleStudentsAPI.DTO.*;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.AssignCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.CreateProfessorRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.GetProfessorResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.UpdateProfessorRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Entity.User;

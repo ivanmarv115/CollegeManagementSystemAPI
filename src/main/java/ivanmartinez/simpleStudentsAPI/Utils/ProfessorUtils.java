@@ -1,8 +1,8 @@
 package ivanmartinez.simpleStudentsAPI.Utils;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CreateProfessorRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.CreateProfessorRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.GetProfessorResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.GetProfessorResponse;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
 import org.springframework.beans.factory.annotation.Value;

@@ -2,10 +2,10 @@ package ivanmartinez.simpleStudentsAPI.Controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ivanmartinez.simpleStudentsAPI.Config.JwtService;
-import ivanmartinez.simpleStudentsAPI.DTO.CreateCourseRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.UpdateCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.AddCoursePrerequisiteRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
-import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Service.CourseService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,6 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -53,7 +52,7 @@ class CoursesControllerTest {
         CreateCourseRequest request = CreateCourseRequest.builder()
                 .code("CS101")
                 .name("Introduction to Computer Science")
-                .year("1st")
+                .semester(1)
                 .degree("CS")
                 .build();
 
@@ -78,7 +77,7 @@ class CoursesControllerTest {
                 .code("M101")
                 .name("Math 101")
                 .degree("Degree")
-                .year("1")
+                .semester(1)
                 .build());
 
         given(courseService.getAllCourses())
@@ -99,7 +98,7 @@ class CoursesControllerTest {
                 .code("M101")
                 .name("Mathematics 101")
                 .degree("Degree")
-                .year("1")
+                .semester(1)
                 .build();
 
         given(courseService.updateCourse(request)).willReturn(
@@ -112,6 +111,25 @@ class CoursesControllerTest {
                         .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isAccepted())
                 .andExpect(content().string("Course updated"));
+    }
+
+    @Test
+    void shouldAddPrerequisite() throws Exception {
+        //given
+        AddCoursePrerequisiteRequest request = AddCoursePrerequisiteRequest.builder()
+                .courseId(1L)
+                .prerequisiteCourseId(2L)
+                .build();
+
+        given(courseService.addCoursePrerequisite(request)).willReturn(
+                ResponseEntity.status(HttpStatus.ACCEPTED).body("Successfully added prerequisite"));
+
+        //test
+        mockMvc.perform(patch("/courses")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isAccepted())
+                .andExpect(content().string("Successfully added prerequisite"));
     }
 
 }

@@ -1,14 +1,12 @@
 package ivanmartinez.simpleStudentsAPI.Controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ivanmartinez.simpleStudentsAPI.Config.JwtService;
-import ivanmartinez.simpleStudentsAPI.DTO.CreateStudentRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.GetStudentsResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.GetStudentsResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.StudentCourseEnrollRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdCourseIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
-import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Service.StudentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +21,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.sound.midi.Patch;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -128,7 +125,6 @@ class StudentsControllerTest {
                 .id(1L)
                 .firstName("Ivan")
                 .lastName("Martinez")
-                .degree("Undergraduate")
                 .dateOfBirth("23/08/2001")
                 .build();
 
@@ -148,7 +144,7 @@ class StudentsControllerTest {
     @Test
     void shouldEnrollToCourse() throws Exception {
         //given
-        StudentCourseEnrollRequest request = StudentCourseEnrollRequest.builder()
+        StudentIdCourseIdRequest request = StudentIdCourseIdRequest.builder()
                 .courseId(1L)
                 .studentId(1L)
                 .build();
@@ -166,4 +162,27 @@ class StudentsControllerTest {
                 .andExpect(status().isAccepted())
                 .andExpect(content().string(response));
     }
+
+    @Test
+    void shouldAddPassedCourse() throws Exception {
+        //given
+        StudentIdCourseIdRequest request = StudentIdCourseIdRequest.builder()
+                .courseId(1L)
+                .studentId(1L)
+                .build();
+
+        String response = "Passed course added successfully";
+
+        given(studentService.enrollToCourse(request)).willReturn(
+                ResponseEntity.status(HttpStatus.ACCEPTED).body(response)
+        );
+
+        //test
+        mockMvc.perform(patch("/students/enroll")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isAccepted())
+                .andExpect(content().string(response));
+    }
+
 }

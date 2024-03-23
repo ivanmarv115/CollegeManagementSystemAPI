@@ -1,10 +1,12 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CreateCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.AddCoursePrerequisiteRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.UpdateCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,12 +17,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CourseServiceTest {
@@ -36,14 +41,14 @@ class CourseServiceTest {
                 .code("M101")
                 .name("Math 101")
                 .degree("Degree")
-                .year("1")
+                .semester(1)
                 .build();
 
         Course courseToCreate = Course.builder()
                 .code("M101")
                 .name("Math 101")
                 .degree("Degree")
-                .year("1")
+                .semester(1)
                 .build();
 
         Course courseToReturn = Course.builder()
@@ -51,7 +56,7 @@ class CourseServiceTest {
                 .code("M101")
                 .name("Math 101")
                 .degree("Degree")
-                .year("1")
+                .semester(1)
                 .build();
 
         given(courseRepository.save(courseToCreate)).willReturn(
@@ -104,7 +109,7 @@ class CourseServiceTest {
                 .code("M101")
                 .name("Mathematics 101")
                 .degree("Degree")
-                .year("1")
+                .semester(1)
                 .build();
 
         Course courseToSave = Course.builder()
@@ -112,7 +117,7 @@ class CourseServiceTest {
                 .code("M101")
                 .name("Mathematics 101")
                 .degree("Degree")
-                .year("1")
+                .semester(1)
                 .build();
 
         Optional<Course> foundCourse = Optional.ofNullable(Course.builder()
@@ -120,7 +125,7 @@ class CourseServiceTest {
                 .code("M101")
                 .name("Math 101")
                 .degree("Degree")
-                .year("1")
+                .semester(1)
                 .build());
 
         given(courseRepository.existsById(requestCourse.getId())).willReturn(true);
@@ -131,5 +136,45 @@ class CourseServiceTest {
         //test
         verify(courseRepository).save(courseToSave);
 
+    }
+
+    @Test
+    void shouldAddCoursePrerequisite() throws ResourceNotFoundException {
+        AddCoursePrerequisiteRequest request = AddCoursePrerequisiteRequest.builder()
+                .courseId(1L)
+                .prerequisiteCourseId(2L)
+                .build();
+
+        Optional<Course> foundCourse = Optional.ofNullable(Course.builder()
+                .id(1L)
+                .code("M101")
+                .name("Math 101")
+                .degree("Degree")
+                .semester(1)
+                .coursesPrerequisites(new HashSet<>())
+                .build());
+
+        Optional<Course> foundPrerequisiteCourse = Optional.ofNullable(Course.builder()
+                .id(2L)
+                .code("M200")
+                .name("Intermediate Maths")
+                .degree("Degree")
+                .semester(1)
+                .build());
+
+        when(courseRepository.findById(request.getCourseId())).thenReturn(
+                foundCourse);
+        when(courseRepository.findById(request.getPrerequisiteCourseId())).thenReturn(
+                foundPrerequisiteCourse);
+
+        //when
+        underTest.addCoursePrerequisite(request);
+
+        //test
+        ArgumentCaptor<Course> courseArgumentCaptor = ArgumentCaptor.forClass(Course.class);
+
+        verify(courseRepository).save(courseArgumentCaptor.capture());
+        assertThat(courseArgumentCaptor.getValue().getCoursesPrerequisites())
+                .isEqualTo(Set.of(foundPrerequisiteCourse.get()));
     }
 }

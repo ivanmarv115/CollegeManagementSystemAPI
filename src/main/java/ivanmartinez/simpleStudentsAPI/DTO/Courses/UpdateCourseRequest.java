@@ -1,4 +1,4 @@
-package ivanmartinez.simpleStudentsAPI.DTO;
+package ivanmartinez.simpleStudentsAPI.DTO.Courses;
 
 import lombok.Builder;
 import lombok.Data;
@@ -9,6 +9,6 @@ public class UpdateCourseRequest {
     private Long id;
     private String name;
     private String code;
-    private String year;
+    private Integer semester;
     private String degree;
 }

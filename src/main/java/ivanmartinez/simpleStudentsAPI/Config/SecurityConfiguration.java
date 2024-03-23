@@ -37,7 +37,7 @@ public class SecurityConfiguration {
             throws Exception {
 
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeRequests()
                 .requestMatchers("/api/v1/auth/**")
                 .permitAll()
@@ -54,7 +54,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public CorsFilter corsFilter() {
+    public CorsConfigurationSource corsConfigurationSource() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
@@ -64,7 +64,7 @@ public class SecurityConfiguration {
         config.addAllowedMethod("*");
 
         source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
+        return source;
     }
 
     @Bean

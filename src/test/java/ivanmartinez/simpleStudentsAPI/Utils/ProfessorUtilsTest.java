@@ -1,7 +1,7 @@
 package ivanmartinez.simpleStudentsAPI.Utils;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CreateProfessorRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.GetProfessorResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.CreateProfessorRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.GetProfessorResponse;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
@@ -10,9 +10,7 @@ import ivanmartinez.simpleStudentsAPI.Entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

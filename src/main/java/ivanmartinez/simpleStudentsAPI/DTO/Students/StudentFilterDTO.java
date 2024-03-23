@@ -1,4 +1,4 @@
-package ivanmartinez.simpleStudentsAPI.DTO;
+package ivanmartinez.simpleStudentsAPI.DTO.Students;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

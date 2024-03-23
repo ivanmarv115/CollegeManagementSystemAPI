@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class StudentCourseEnrollRequest {
-    private Long studentId;
+public class AddCoursePrerequisiteRequest {
     private Long courseId;
+    private Long prerequisiteCourseId;
 }

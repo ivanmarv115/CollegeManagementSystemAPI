@@ -7,7 +7,8 @@ import lombok.*;
 import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -17,17 +18,23 @@ public class Course {
     private Long id;
     private String name;
     private String code;
-    private String year;
-    private String degree;
+    private Integer semester;
 
-    @ManyToMany(mappedBy = "courses")
+    @ManyToMany(mappedBy = "currentCourses")
     @JsonIgnore
-    @ToString.Exclude
     private Set<Student> students;
 
     @ManyToMany(mappedBy = "coursesTaught")
     @JsonIgnore
-    @ToString.Exclude
     private Set<Professor> professors;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "course_prerequisites",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "prerequisite_id")
+    )
+    @JsonIgnore
+    private Set<Course> coursesPrerequisites;
 
 }

@@ -1,9 +1,12 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
 import ivanmartinez.simpleStudentsAPI.DTO.*;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.AssignCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.CreateProfessorRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.GetProfessorResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.UpdateProfessorRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
-import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;

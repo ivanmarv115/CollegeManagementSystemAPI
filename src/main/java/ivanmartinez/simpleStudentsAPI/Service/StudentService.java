@@ -1,11 +1,12 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CreateStudentRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.GetStudentsResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.GetStudentsResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.StudentCourseEnrollRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdCourseIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
+import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
 
@@ -26,5 +27,7 @@ public interface StudentService {
                                                       Optional<String> lastName,
                                                       Optional<String> course);
 
-    ResponseEntity<String> enrollToCourse(StudentCourseEnrollRequest request) throws CustomException;
+    ResponseEntity<String> enrollToCourse(StudentIdCourseIdRequest request) throws CustomException;
+
+    ResponseEntity<String> addPassedCourse(StudentIdCourseIdRequest request) throws ResourceNotFoundException, InvalidRequestException;
 }

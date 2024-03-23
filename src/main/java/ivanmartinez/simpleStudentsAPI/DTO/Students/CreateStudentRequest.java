@@ -1,4 +1,4 @@
-package ivanmartinez.simpleStudentsAPI.DTO;
+package ivanmartinez.simpleStudentsAPI.DTO.Students;
 
 import lombok.Builder;
 import lombok.Data;

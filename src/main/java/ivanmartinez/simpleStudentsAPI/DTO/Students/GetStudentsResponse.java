@@ -1,7 +1,6 @@
-package ivanmartinez.simpleStudentsAPI.DTO;
+package ivanmartinez.simpleStudentsAPI.DTO.Students;
 
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
-import ivanmartinez.simpleStudentsAPI.Entity.User;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,8 +12,9 @@ public class GetStudentsResponse {
     private Long id;
     private String firstName;
     private String lastName;
-    private String course;
-    private Set<Course> courses;
+    private Integer semester;
+    private Set<Course> currentCourses;
+    private Set<Course> passedCourses;
     private String degree;
     private String dateOfBirth;
     private String username;

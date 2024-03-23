@@ -1,9 +1,9 @@
 package ivanmartinez.simpleStudentsAPI.Controller;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CreateStudentRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.GetStudentsResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.GetStudentsResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.StudentCourseEnrollRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdCourseIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Service.StudentService;
@@ -17,13 +17,13 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/students")
-@CrossOrigin
 public class StudentsController {
 
     @Autowired
     private StudentService studentService;
 
     @GetMapping
+    @Secured("ROLE_ADMIN")
     public ResponseEntity<List<GetStudentsResponse>> getAllStudents() throws CustomException {
         return studentService.getAllStudents();
     }
@@ -64,8 +64,15 @@ public class StudentsController {
     @Secured("ROLE_ADMIN")
     @PatchMapping("/enroll")
     public ResponseEntity<String> enrollStudent(
-            @RequestBody StudentCourseEnrollRequest request) throws CustomException {
+            @RequestBody StudentIdCourseIdRequest request) throws CustomException {
         return studentService.enrollToCourse(request);
+    }
+
+    @Secured("ROLE_ADMIN")
+    @PatchMapping("/addPassed")
+    public ResponseEntity<String> addPassedCourse(
+            @RequestBody StudentIdCourseIdRequest request) throws CustomException {
+        return studentService.addPassedCourse(request);
     }
 
 }

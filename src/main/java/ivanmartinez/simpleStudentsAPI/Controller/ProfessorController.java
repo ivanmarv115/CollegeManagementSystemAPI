@@ -1,9 +1,10 @@
 package ivanmartinez.simpleStudentsAPI.Controller;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CreateProfessorRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.GetProfessorResponse;
-import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.UpdateProfessorRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.*;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.AssignCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.CreateProfessorRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.GetProfessorResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.UpdateProfessorRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Service.ProfessorService;
@@ -51,5 +52,11 @@ public class ProfessorController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteProfessor(@RequestBody LongIdRequest longIdRequest) {
         return professorService.deleteProfessor(longIdRequest);
+    }
+
+    @Secured("ROLE_ADMIN")
+    @PatchMapping("/assign")
+    public ResponseEntity<String> assignCourse(@RequestBody AssignCourseRequest request) throws CustomException {
+        return professorService.assignCourse(request);
     }
 }
