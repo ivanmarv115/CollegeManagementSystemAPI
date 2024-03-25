@@ -1,10 +1,11 @@
 package ivanmartinez.simpleStudentsAPI.Controller;
 
-import ivanmartinez.simpleStudentsAPI.DTO.AddCoursePrerequisiteRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.CourseIdPrerequisiteIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,15 +23,13 @@ public class CoursesController {
 
     @PostMapping
     @Secured("ROLE_ADMIN")
-    public ResponseEntity<Long> createCourse(
-            @RequestBody CreateCourseRequest request
-            ) throws CustomException {
+    public ResponseEntity<Long> createCourse(@RequestBody CreateCourseRequest request)
+            throws ResourceAlreadyExistsException {
         return courseService.createCourse(request);
     }
 
     @GetMapping
-    @Secured("ROLE_ADMIN")
-    public ResponseEntity<List<Course>> getAllCourses() throws CustomException {
+    public ResponseEntity<List<Course>> getAllCourses() throws ResourceNotFoundException {
         return courseService.getAllCourses();
     }
 
@@ -43,8 +42,15 @@ public class CoursesController {
 
     @PatchMapping("/addPrerequisite")
     @Secured("ROLE_ADMIN")
-    public ResponseEntity<String> addPrerequisite(@RequestBody AddCoursePrerequisiteRequest request)
+    public ResponseEntity<String> addPrerequisite(@RequestBody CourseIdPrerequisiteIdRequest request)
             throws ResourceNotFoundException {
         return courseService.addCoursePrerequisite(request);
+    }
+
+    @PatchMapping("/removePrerequisite")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<String> removePrerequisite(@RequestBody CourseIdPrerequisiteIdRequest request)
+            throws ResourceNotFoundException {
+        return courseService.removeCoursePrerequisite(request);
     }
 }

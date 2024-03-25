@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class CreateDegreeRequest {
+public class UpdateDegreeRequest {
+    private Long degreeId;
     private String name;
-    private String code;
 }

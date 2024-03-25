@@ -20,6 +20,14 @@ public class Course {
     private String code;
     private Integer semester;
 
+    @ManyToMany(mappedBy = "requiredCourses")
+    @JsonIgnore
+    private Set<Degree> requiredForDegree;
+
+    @ManyToMany(mappedBy = "optionalCourses")
+    @JsonIgnore
+    private Set<Degree> optionalForDegree;
+
     @ManyToMany(mappedBy = "currentCourses")
     @JsonIgnore
     private Set<Student> students;

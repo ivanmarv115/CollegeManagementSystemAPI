@@ -1,5 +1,6 @@
 package ivanmartinez.simpleStudentsAPI.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,8 +21,8 @@ public class Student {
     private String lastName;
     private Integer semester;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(referencedColumnName = "id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     private Degree degree;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})

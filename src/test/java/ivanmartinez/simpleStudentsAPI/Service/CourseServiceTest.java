@@ -1,6 +1,6 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
-import ivanmartinez.simpleStudentsAPI.DTO.AddCoursePrerequisiteRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.CourseIdPrerequisiteIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
@@ -106,7 +106,6 @@ class CourseServiceTest {
                 .id(1L)
                 .code("M101")
                 .name("Mathematics 101")
-                .degree("Degree")
                 .semester(1)
                 .build();
 
@@ -136,7 +135,7 @@ class CourseServiceTest {
 
     @Test
     void shouldAddCoursePrerequisite() throws ResourceNotFoundException {
-        AddCoursePrerequisiteRequest request = AddCoursePrerequisiteRequest.builder()
+        CourseIdPrerequisiteIdRequest request = CourseIdPrerequisiteIdRequest.builder()
                 .courseId(1L)
                 .prerequisiteCourseId(2L)
                 .build();
@@ -170,5 +169,47 @@ class CourseServiceTest {
         verify(courseRepository).save(courseArgumentCaptor.capture());
         assertThat(courseArgumentCaptor.getValue().getCoursesPrerequisites())
                 .isEqualTo(Set.of(foundPrerequisiteCourse.get()));
+    }
+
+    @Test
+    void shouldRemoveCoursePrerequisite() throws ResourceNotFoundException {
+        CourseIdPrerequisiteIdRequest request = CourseIdPrerequisiteIdRequest.builder()
+                .courseId(1L)
+                .prerequisiteCourseId(2L)
+                .build();
+
+        Optional<Course> foundCourse = Optional.ofNullable(Course.builder()
+                .id(1L)
+                .code("M101")
+                .name("Math 101")
+                .semester(1)
+                .coursesPrerequisites(new HashSet<>())
+                .build());
+
+        Optional<Course> foundPrerequisiteCourse = Optional.ofNullable(Course.builder()
+                .id(2L)
+                .code("M200")
+                .name("Intermediate Maths")
+                .semester(1)
+                .build());
+
+        foundCourse.get().getCoursesPrerequisites().add(foundPrerequisiteCourse.get());
+
+        when(courseRepository.findById(request.getCourseId())).thenReturn(
+                foundCourse);
+        when(courseRepository.findById(request.getPrerequisiteCourseId())).thenReturn(
+                foundPrerequisiteCourse);
+
+        //when
+        underTest.removeCoursePrerequisite(request);
+
+        //test
+        ArgumentCaptor<Course> courseArgumentCaptor = ArgumentCaptor.forClass(Course.class);
+
+        verify(courseRepository).save(courseArgumentCaptor.capture());
+        assertThat(courseArgumentCaptor.getValue().getCoursesPrerequisites())
+                .isEqualTo(Set.of());
+        assertThat(courseArgumentCaptor.getValue().getId())
+                .isEqualTo(request.getCourseId());
     }
 }

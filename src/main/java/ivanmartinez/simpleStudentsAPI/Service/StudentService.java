@@ -4,6 +4,7 @@ import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Students.GetStudentsResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdCourseIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdDegreeIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
@@ -30,4 +31,8 @@ public interface StudentService {
     ResponseEntity<String> enrollToCourse(StudentIdCourseIdRequest request) throws CustomException;
 
     ResponseEntity<String> addPassedCourse(StudentIdCourseIdRequest request) throws ResourceNotFoundException, InvalidRequestException;
+
+    ResponseEntity<String> enrollToDegree(StudentIdDegreeIdRequest request) throws ResourceNotFoundException;
+
+    ResponseEntity<String> unrollToCourse(StudentIdCourseIdRequest request) throws ResourceNotFoundException, InvalidRequestException;
 }

@@ -2,7 +2,7 @@ package ivanmartinez.simpleStudentsAPI.Controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ivanmartinez.simpleStudentsAPI.Config.JwtService;
-import ivanmartinez.simpleStudentsAPI.DTO.AddCoursePrerequisiteRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.CourseIdPrerequisiteIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
@@ -96,7 +96,6 @@ class CoursesControllerTest {
                 .id(1L)
                 .code("M101")
                 .name("Mathematics 101")
-                .degree("Degree")
                 .semester(1)
                 .build();
 
@@ -115,7 +114,7 @@ class CoursesControllerTest {
     @Test
     void shouldAddPrerequisite() throws Exception {
         //given
-        AddCoursePrerequisiteRequest request = AddCoursePrerequisiteRequest.builder()
+        CourseIdPrerequisiteIdRequest request = CourseIdPrerequisiteIdRequest.builder()
                 .courseId(1L)
                 .prerequisiteCourseId(2L)
                 .build();
@@ -124,11 +123,30 @@ class CoursesControllerTest {
                 ResponseEntity.status(HttpStatus.ACCEPTED).body("Successfully added prerequisite"));
 
         //test
-        mockMvc.perform(patch("/courses")
+        mockMvc.perform(patch("/courses/addPrerequisite")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
                 .andExpect(content().string("Successfully added prerequisite"));
+    }
+
+    @Test
+    void shouldRemovePrerequisite() throws Exception {
+        //given
+        CourseIdPrerequisiteIdRequest request = CourseIdPrerequisiteIdRequest.builder()
+                .courseId(1L)
+                .prerequisiteCourseId(2L)
+                .build();
+
+        given(courseService.removeCoursePrerequisite(request)).willReturn(
+                ResponseEntity.status(HttpStatus.ACCEPTED).body("Successfully removed prerequisite"));
+
+        //test
+        mockMvc.perform(patch("/courses/removePrerequisite")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isAccepted())
+                .andExpect(content().string("Successfully removed prerequisite"));
     }
 
 }

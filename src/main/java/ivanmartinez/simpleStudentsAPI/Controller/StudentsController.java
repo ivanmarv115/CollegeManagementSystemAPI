@@ -62,15 +62,29 @@ public class StudentsController {
     }
 
     @Secured("ROLE_ADMIN")
-    @PatchMapping("/enroll")
-    public ResponseEntity<String> enrollStudent(
+    @PatchMapping("/enrollToCourse")
+    public ResponseEntity<String> enrollToCourse(
             @RequestBody StudentIdCourseIdRequest request) throws CustomException {
         return studentService.enrollToCourse(request);
     }
 
     @Secured("ROLE_ADMIN")
+    @PatchMapping("/unrollToCourse")
+    public ResponseEntity<String> unrollToCourse(
+            @RequestBody StudentIdCourseIdRequest request) throws CustomException {
+        return studentService.unrollToCourse(request);
+    }
+
+    @Secured("ROLE_ADMIN")
     @PatchMapping("/addPassed")
     public ResponseEntity<String> addPassedCourse(
+            @RequestBody StudentIdCourseIdRequest request) throws CustomException {
+        return studentService.addPassedCourse(request);
+    }
+
+    @Secured("ROLE_ADMIN")
+    @PatchMapping("/enrollToDegree")
+    public ResponseEntity<String> enrollToDegree(
             @RequestBody StudentIdCourseIdRequest request) throws CustomException {
         return studentService.addPassedCourse(request);
     }

@@ -10,5 +10,4 @@ public class UpdateCourseRequest {
     private String name;
     private String code;
     private Integer semester;
-    private String degree;
 }

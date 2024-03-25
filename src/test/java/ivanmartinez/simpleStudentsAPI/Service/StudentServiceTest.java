@@ -4,11 +4,13 @@ import ivanmartinez.simpleStudentsAPI.DTO.*;
 import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Students.GetStudentsResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdCourseIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdDegreeIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.*;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
+import ivanmartinez.simpleStudentsAPI.Repository.DegreeRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.StudentsRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.UserRepository;
 import ivanmartinez.simpleStudentsAPI.Utils.StudentUtils;
@@ -45,6 +47,8 @@ class StudentServiceTest {
     private UserRepository userRepository;
     @Mock
     private CourseRepository courseRepository;
+    @Mock
+    private DegreeRepository degreeRepository;
     @InjectMocks
     private StudentServiceImpl underTest;
 
@@ -343,6 +347,46 @@ class StudentServiceTest {
     }
 
     @Test
+    void shouldUnrollToCourse() throws InvalidRequestException, ResourceNotFoundException {
+        //given
+        StudentIdCourseIdRequest request = StudentIdCourseIdRequest.builder()
+                .courseId(1L)
+                .studentId(1L)
+                .build();
+
+        Student studentFound = Student.builder()
+                .id(1L)
+                .semester(1)
+                .currentCourses(new HashSet<>())
+                .passedCourses(new HashSet<>())
+                .build();
+
+        Course courseFound = Course.builder()
+                .id(1L)
+                .semester(1)
+                .students(new HashSet<>())
+                .build();
+
+        courseFound.getStudents().add(studentFound);
+        studentFound.getCurrentCourses().add(courseFound);
+
+        given(studentsRepository.findById(request.getStudentId())).willReturn(
+                Optional.of(studentFound));
+        given(courseRepository.findById(request.getCourseId())).willReturn(
+                Optional.of(courseFound));
+
+        //when
+        underTest.unrollToCourse(request);
+
+        //test
+        ArgumentCaptor<Student> studentArgumentCaptor = ArgumentCaptor.forClass(Student.class);
+
+        verify(studentsRepository).save(studentArgumentCaptor.capture());
+        Student capturedStudent = studentArgumentCaptor.getValue();
+        assertThat(capturedStudent.getPassedCourses()).isEqualTo(Set.of());
+    }
+
+    @Test
     void shouldAddPassedCourse() throws InvalidRequestException, ResourceNotFoundException {
         StudentIdCourseIdRequest request = StudentIdCourseIdRequest.builder()
                 .courseId(1L)
@@ -379,6 +423,38 @@ class StudentServiceTest {
         verify(studentsRepository).save(studentArgumentCaptor.capture());
         Student capturedStudent = studentArgumentCaptor.getValue();
         assertThat(capturedStudent.getPassedCourses()).isEqualTo(Set.of(courseFound));
+    }
+
+    @Test
+    void shouldEnrollToDegree() throws ResourceNotFoundException {
+        //given
+        StudentIdDegreeIdRequest request = StudentIdDegreeIdRequest.builder()
+                .degreeId(1L)
+                .studentId(1L)
+                .build();
+
+        Student student = Student.builder()
+                .id(1L)
+                .build();
+
+        Degree degree = Degree.builder()
+                .id(1L)
+                .build();
+
+        given(studentsRepository.findById(request.getStudentId())).willReturn(
+                Optional.of(student));
+        given(degreeRepository.findById(request.getDegreeId())).willReturn(
+                Optional.of(degree));
+
+        //when
+        underTest.enrollToDegree(request);
+
+        //test
+        ArgumentCaptor<Student> studentArgumentCaptor = ArgumentCaptor.forClass(Student.class);
+
+        verify(studentsRepository).save(studentArgumentCaptor.capture());
+        Student capturedStudent = studentArgumentCaptor.getValue();
+        assertThat(capturedStudent.getDegree()).isEqualTo(degree);
     }
 
 }

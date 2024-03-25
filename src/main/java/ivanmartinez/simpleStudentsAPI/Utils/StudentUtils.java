@@ -20,6 +20,7 @@ public class StudentUtils {
                 .dateOfBirth(createStudentRequest.getDateOfBirth())
                 .lastName(createStudentRequest.getLastName())
                 .firstName(createStudentRequest.getFirstName())
+                .semester(1)
                 .currentCourses(new HashSet<>())
                 .passedCourses(new HashSet<>())
                 .build();

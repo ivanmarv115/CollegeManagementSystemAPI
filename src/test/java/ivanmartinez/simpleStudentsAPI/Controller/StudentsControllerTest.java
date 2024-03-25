@@ -1,5 +1,6 @@
 package ivanmartinez.simpleStudentsAPI.Controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ivanmartinez.simpleStudentsAPI.Config.JwtService;
 import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
@@ -7,6 +8,8 @@ import ivanmartinez.simpleStudentsAPI.DTO.Students.GetStudentsResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdCourseIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
+import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Service.StudentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -156,9 +159,31 @@ class StudentsControllerTest {
         );
 
         //test
-        mockMvc.perform(patch("/students/enroll")
+        mockMvc.perform(patch("/students/enrollToCourse")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isAccepted())
+                .andExpect(content().string(response));
+    }
+
+    @Test
+    void shouldUnrollToCourse() throws Exception {
+        //given
+        StudentIdCourseIdRequest request = StudentIdCourseIdRequest.builder()
+                .courseId(1L)
+                .studentId(1L)
+                .build();
+
+        String response = "Unrolled successfully";
+
+        given(studentService.unrollToCourse(request)).willReturn(
+                ResponseEntity.status(HttpStatus.ACCEPTED).body(response)
+        );
+
+        //test
+        mockMvc.perform(patch("/students/unrollToCourse")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
                 .andExpect(content().string(response));
     }
@@ -179,6 +204,28 @@ class StudentsControllerTest {
 
         //test
         mockMvc.perform(patch("/students/enroll")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isAccepted())
+                .andExpect(content().string(response));
+    }
+
+    @Test
+    void shouldEnrollToDegree() throws Exception {
+        //given
+        StudentIdCourseIdRequest request = StudentIdCourseIdRequest.builder()
+                .courseId(1L)
+                .studentId(1L)
+                .build();
+
+        String response = "Enrolled successfully";
+
+        given(studentService.unrollToCourse(request)).willReturn(
+                ResponseEntity.status(HttpStatus.ACCEPTED).body(response)
+        );
+
+        //test
+        mockMvc.perform(patch("/students/enrollToDegree")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
