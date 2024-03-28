@@ -3,9 +3,6 @@ package ivanmartinez.simpleStudentsAPI.Service;
 import ivanmartinez.simpleStudentsAPI.Config.JwtService;
 import ivanmartinez.simpleStudentsAPI.DTO.AuthenticationRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.AuthenticationResponse;
-import ivanmartinez.simpleStudentsAPI.DTO.RegisterRequest;
-import ivanmartinez.simpleStudentsAPI.Entity.Role;
-import ivanmartinez.simpleStudentsAPI.Entity.User;
 import ivanmartinez.simpleStudentsAPI.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -15,9 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientResponseException;
 
 @Service
 @RequiredArgsConstructor
