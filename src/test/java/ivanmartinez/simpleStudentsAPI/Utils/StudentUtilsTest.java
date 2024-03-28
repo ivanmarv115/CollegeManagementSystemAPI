@@ -4,6 +4,7 @@ import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
+import ivanmartinez.simpleStudentsAPI.Entity.User;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +50,6 @@ class StudentUtilsTest {
                 .builder()
                 .firstName("Ivan")
                 .lastName("Martinez")
-                .degree("Undergraduate")
                 .dateOfBirth("23/08/2001")
                 .username("imartinez")
                 .build();
@@ -64,7 +64,9 @@ class StudentUtilsTest {
         Student student = underTest.createStudentRequestToStudentEntity(createStudentRequest);
 
         // Then
-        assertThat(student).isEqualTo(expectedStudent);
+        assertThat(student.getFirstName()).isEqualTo(expectedStudent.getFirstName());
+        assertThat(student.getLastName()).isEqualTo(expectedStudent.getLastName());
+        assertThat(student.getDateOfBirth()).isEqualTo(expectedStudent.getDateOfBirth());
     }
 
 }

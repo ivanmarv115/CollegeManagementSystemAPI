@@ -32,19 +32,20 @@ class ProfessorUtilsTest {
         Professor expectedProfessor = Professor.builder()
                 .firstName("Ivan")
                 .lastName("Martinez")
+                .coursesTaught(new HashSet<>())
                 .build();
 
         // When
         Professor professor = underTest.createProfessorRequestToProfessorEntity(request);
 
         // Then
-        assertEquals(professor, expectedProfessor);
+        assertEquals(expectedProfessor, professor);
     }
 
     @Test
     void professorToGetProfessorResponse() {
         // Given
-        Set<Course> coursesTaught = new HashSet<>();;
+        Set<Course> coursesTaught = new HashSet<>();
 
         Professor professor = new Professor();
         professor.setId(1L);

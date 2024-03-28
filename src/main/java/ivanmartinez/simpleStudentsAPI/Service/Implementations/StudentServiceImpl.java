@@ -1,10 +1,7 @@
-package ivanmartinez.simpleStudentsAPI.Service;
+package ivanmartinez.simpleStudentsAPI.Service.Implementations;
 
 import ivanmartinez.simpleStudentsAPI.DTO.*;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.GetStudentsResponse;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdCourseIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdDegreeIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.*;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Degree;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
@@ -17,9 +14,10 @@ import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.DegreeRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.StudentsRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.UserRepository;
+import ivanmartinez.simpleStudentsAPI.Service.StudentService;
+import ivanmartinez.simpleStudentsAPI.Service.UserService;
 import ivanmartinez.simpleStudentsAPI.Utils.StudentUtils;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -30,7 +28,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class StudentServiceImpl implements StudentService{
+public class StudentServiceImpl implements StudentService {
 
     private final StudentsRepository studentsRepository;
     private final StudentUtils studentUtils;
@@ -41,58 +39,47 @@ public class StudentServiceImpl implements StudentService{
     Logger logger  = LoggerFactory.getLogger(StudentServiceImpl.class);
 
     @Override
-    public ResponseEntity<String> createStudent(CreateStudentRequest createStudentRequest) throws CustomException {
-        try {
-            logger.info("***** BEGINNING CREATE STUDENT *****");
-            logger.info("New Student: " + createStudentRequest);
-            if(userRepository.findByUsername(createStudentRequest.getUsername()).isPresent()){
-                throw new ResourceAlreadyExistsException("Username already exists");
-            }
-            Student student = studentUtils.createStudentRequestToStudentEntity(createStudentRequest);
-            logger.info("Creating new user");
-            CreateUserRequest createUserRequest = studentUtils
-                    .createStudentRequestToCreateUserRequest(createStudentRequest);
-            User user = userService.createUser(createUserRequest);
-            student.setUser(user);
-
-            studentsRepository.save(student);
-            logger.info("Student saved");
-            logger.info("***** ENDING CREATE STUDENT *****");
-            return new ResponseEntity<>("Student created successfully", HttpStatus.CREATED);
-        }catch(RuntimeException ex){
-            logger.error(ex.getMessage());
-            throw new CustomException("Error: could not create student", HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<String> createStudent(CreateStudentRequest createStudentRequest) throws ResourceAlreadyExistsException {
+        logger.info("***** BEGINNING CREATE STUDENT *****");
+        logger.info("New Student: " + createStudentRequest);
+        if(userRepository.findByUsername(createStudentRequest.getUsername()).isPresent()){
+            throw new ResourceAlreadyExistsException("Username already exists");
         }
+        Student student = studentUtils.createStudentRequestToStudentEntity(createStudentRequest);
+        logger.info("Creating new user");
+        CreateUserRequest createUserRequest = studentUtils
+                .createStudentRequestToCreateUserRequest(createStudentRequest);
+        User user = userService.createUser(createUserRequest);
+        student.setUser(user);
+
+        studentsRepository.save(student);
+        logger.info("Student saved");
+        logger.info("***** ENDING CREATE STUDENT *****");
+        return new ResponseEntity<>("Student created successfully", HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<List<GetStudentsResponse>> getAllStudents() throws CustomException {
-        try {
-            logger.info("***** GET ALL STUDENTS CALLED *****");
-            List<Student> students = studentsRepository.findAll();
+    public ResponseEntity<List<GetStudentsResponse>> getAllStudents(){
+        logger.info("***** GET ALL STUDENTS CALLED *****");
+        List<Student> students = studentsRepository.findAll();
 
-            if (!students.isEmpty()) {
-                logger.info("***** FOUND STUDENTS *****");
+        if (!students.isEmpty()) {
+            logger.info("***** FOUND STUDENTS *****");
 
-                List<GetStudentsResponse> response = new ArrayList<>();
+            List<GetStudentsResponse> response = new ArrayList<>();
 
-                for (Student student : students) {
-                    GetStudentsResponse studentsResponse = studentEntityToStudentResponse(student);
-                    if(student.getDegree() != null){
-                        studentsResponse.setDegree(student.getDegree().getName());
-                    }
-                    response.add(studentsResponse);
+            for (Student student : students) {
+                GetStudentsResponse studentsResponse = studentEntityToStudentResponse(student);
+                if(student.getDegree() != null){
+                    studentsResponse.setDegree(student.getDegree().getName());
                 }
-
-                return new ResponseEntity<>(response, HttpStatus.OK);
+                response.add(studentsResponse);
             }
-            logger.warn("***** NO STUDENTS FOUND *****");
-            return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
-        }catch (RuntimeException exception){
-            logger.error(exception.getMessage());
-            throw new CustomException("Error when trying to get students",
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
+        logger.warn("***** NO STUDENTS FOUND *****");
+        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
     }
 
     private GetStudentsResponse studentEntityToStudentResponse(Student student){
@@ -133,60 +120,49 @@ public class StudentServiceImpl implements StudentService{
     }
 
     @Override
-    public ResponseEntity<String> deleteStudent(LongIdRequest longIdRequest) throws CustomException {
-        try {
-            logger.info("***** DELETE STUDENT CALLED *****");
-            logger.info("Student idRequest: " + longIdRequest);
-            Optional<Student> student = studentsRepository.findById(longIdRequest.getLongId());
+    public ResponseEntity<String> deleteStudent(LongIdRequest longIdRequest) throws ResourceNotFoundException {
+        logger.info("***** DELETE STUDENT CALLED *****");
+        logger.info("Student idRequest: " + longIdRequest);
+        Optional<Student> student = studentsRepository.findById(longIdRequest.getLongId());
 
-            if (student.isPresent()) {
-                studentsRepository.delete(student.get());
-                logger.info("***** STUDENT DELETED *****");
-                return new ResponseEntity<>("Student deleted", HttpStatus.ACCEPTED);
-            } else {
-                logger.warn("***** STUDENT DOES NOT EXIST *****");
-                throw new ResourceNotFoundException("Student does not exist");
-            }
-        }catch (RuntimeException ex){
-            logger.error(ex.getMessage());
-            throw new CustomException("Could not delete the student", HttpStatus.INTERNAL_SERVER_ERROR);
+        if (student.isPresent()) {
+            studentsRepository.delete(student.get());
+            logger.info("***** STUDENT DELETED *****");
+            return new ResponseEntity<>("Student deleted", HttpStatus.ACCEPTED);
+        } else {
+            logger.warn("***** STUDENT DOES NOT EXIST *****");
+            throw new ResourceNotFoundException("Student does not exist");
         }
     }
 
     @Override
-    public ResponseEntity<String> updateStudent(Student request) throws CustomException {
-        try {
-            logger.info("***** UPDATE STUDENT CALLED *****");
-            logger.info("New Student: " + request);
-            Optional<Student> studentById = studentsRepository.findById(request.getId());
+    public ResponseEntity<String> updateStudent(UpdateStudentRequest request) throws ResourceNotFoundException {
+        logger.info("***** UPDATE STUDENT CALLED *****");
+        logger.info("New Student: " + request);
+        Optional<Student> studentById = studentsRepository.findById(request.getId());
 
 
-            if (studentById.isEmpty()) {
-                logger.warn("STUDENT NOT FOUND");
-                throw new ResourceNotFoundException("Student with id " + request.getId() +
-                        " not found");
-            }
-            Student newStudent = studentById.get();
-            logger.info("Old Student: " + newStudent);
-
-            newStudent.setFirstName(request.getFirstName());
-            newStudent.setLastName(request.getLastName());
-            newStudent.setDateOfBirth(request.getDateOfBirth());
-            newStudent.setSemester(request.getSemester());
-            studentsRepository.save(newStudent);
-            logger.info("UPDATED");
-            logger.info("***** END UDPATE STUDENT *****");
-            return new ResponseEntity<>("Student Updated",
-                    HttpStatus.ACCEPTED);
-        }catch (RuntimeException ex){
-            logger.error(ex.getMessage());
-            throw new CustomException("Error when trying to update student",
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+        if (studentById.isEmpty()) {
+            logger.warn("STUDENT NOT FOUND");
+            throw new ResourceNotFoundException("Student with id " + request.getId() +
+                    " not found");
         }
+        Student newStudent = studentById.get();
+        logger.info("Old Student: " + newStudent);
+
+        newStudent.setFirstName(request.getFirstName());
+        newStudent.setLastName(request.getLastName());
+        newStudent.setDateOfBirth(request.getDateOfBirth());
+        newStudent.setSemester(request.getSemester());
+        studentsRepository.save(newStudent);
+        logger.info("UPDATED");
+        logger.info("***** END UDPATE STUDENT *****");
+        return new ResponseEntity<>("Student Updated",
+                HttpStatus.ACCEPTED);
     }
 
     @Override
-    public ResponseEntity<String> enrollToCourse(StudentIdCourseIdRequest request) throws CustomException {
+    public ResponseEntity<String> enrollToCourse(StudentIdCourseIdRequest request) throws ResourceNotFoundException, InvalidRequestException {
         logger.info("***** STUDENT ENROLL *****");
         logger.info("Request: " + request);
         Optional<Student> studentOptional = studentsRepository.findById(request.getStudentId());

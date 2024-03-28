@@ -3,10 +3,8 @@ package ivanmartinez.simpleStudentsAPI.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ivanmartinez.simpleStudentsAPI.Config.JwtService;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.GetStudentsResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.*;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdCourseIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
@@ -27,6 +25,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -94,7 +93,7 @@ class StudentsControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("Student created successfully"))
+                .andExpect(content().string(response))
                 .andDo(print());
     }
 
@@ -111,12 +110,10 @@ class StudentsControllerTest {
                 ResponseEntity.status(HttpStatus.ACCEPTED).body(response));
 
         String stringRequest = objectMapper.writeValueAsString(request);
-        System.out.println(stringRequest);
         //test
         ResultActions result = mockMvc.perform(delete("/students")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(stringRequest))
-                .andDo(print())
                 .andExpect(status().isAccepted())
                 .andExpect(content().string(response));
     }
@@ -124,7 +121,7 @@ class StudentsControllerTest {
     @Test
     void shouldUpdateStudent() throws Exception {
         //given
-        Student student = Student.builder()
+        UpdateStudentRequest request = UpdateStudentRequest.builder()
                 .id(1L)
                 .firstName("Ivan")
                 .lastName("Martinez")
@@ -133,13 +130,14 @@ class StudentsControllerTest {
 
         String response = "Student updated";
 
-        given(studentService.updateStudent(student)).willReturn(
+        given(studentService.updateStudent(request)).willReturn(
                 ResponseEntity.status(HttpStatus.ACCEPTED).body(response));
 
         //test
         mockMvc.perform(put("/students")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(student)))
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
                 .andExpect(status().isAccepted())
                 .andExpect(content().string(response));
     }
@@ -198,12 +196,12 @@ class StudentsControllerTest {
 
         String response = "Passed course added successfully";
 
-        given(studentService.enrollToCourse(request)).willReturn(
+        given(studentService.addPassedCourse(request)).willReturn(
                 ResponseEntity.status(HttpStatus.ACCEPTED).body(response)
         );
 
         //test
-        mockMvc.perform(patch("/students/enroll")
+        mockMvc.perform(patch("/students/addPassed")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
@@ -213,14 +211,14 @@ class StudentsControllerTest {
     @Test
     void shouldEnrollToDegree() throws Exception {
         //given
-        StudentIdCourseIdRequest request = StudentIdCourseIdRequest.builder()
-                .courseId(1L)
+        StudentIdDegreeIdRequest request = StudentIdDegreeIdRequest.builder()
+                .degreeId(1L)
                 .studentId(1L)
                 .build();
 
         String response = "Enrolled successfully";
 
-        given(studentService.unrollToCourse(request)).willReturn(
+        given(studentService.enrollToDegree(request)).willReturn(
                 ResponseEntity.status(HttpStatus.ACCEPTED).body(response)
         );
 

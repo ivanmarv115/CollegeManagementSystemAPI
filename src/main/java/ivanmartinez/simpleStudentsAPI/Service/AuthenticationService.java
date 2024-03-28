@@ -25,29 +25,8 @@ public class AuthenticationService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
-
-    public ResponseEntity<AuthenticationResponse> register(
-            RegisterRequest request
-    ) {
-        var user = User.builder()
-                .username(request.getUsername())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
-                .build();
-
-        userRepository.save(user);
-        var jwt = jwtService.generateToken(user);
-        var authResponse = AuthenticationResponse.builder()
-                .role(request.getRole())
-                .token(jwt)
-                .build();
-
-        return new ResponseEntity<AuthenticationResponse>
-                (authResponse, HttpStatus.CREATED);
-    }
 
     public ResponseEntity<AuthenticationResponse> authenticate
             (AuthenticationRequest request) {
@@ -69,15 +48,14 @@ public class AuthenticationService {
 
             logger.info("Authentication OK");
             logger.info("***** AUTHENTICATION END *****");
-            return new ResponseEntity<AuthenticationResponse>(authResponse,
-                    HttpStatus.OK);
+            return new ResponseEntity<>(authResponse, HttpStatus.OK);
         }catch (AuthenticationException exception){
             logger.error(exception.getMessage());
             authResponse.setMessage(exception.getMessage());
             logger.info("***** AUTHENTICATION END *****");
-            return new ResponseEntity<AuthenticationResponse>(authResponse,
-                    HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(authResponse, HttpStatus.UNAUTHORIZED);
         }
 
     }
+
 }

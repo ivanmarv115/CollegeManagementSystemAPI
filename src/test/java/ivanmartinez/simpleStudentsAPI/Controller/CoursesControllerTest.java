@@ -2,10 +2,10 @@ package ivanmartinez.simpleStudentsAPI.Controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ivanmartinez.simpleStudentsAPI.Config.JwtService;
-import ivanmartinez.simpleStudentsAPI.DTO.CourseIdPrerequisiteIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.CourseIdPrerequisiteIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.GetCourseResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
-import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Service.CourseService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,9 +70,9 @@ class CoursesControllerTest {
     @Test
     void shouldGetAllCourses() throws Exception {
         //given
-        List<Course> courses = new ArrayList<>();
+        List<GetCourseResponse> courses = new ArrayList<>();
 
-        courses.add(Course.builder()
+        courses.add(GetCourseResponse.builder()
                 .id(1L)
                 .code("M101")
                 .name("Math 101")

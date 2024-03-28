@@ -22,12 +22,13 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private Long id;
     @Column(unique = true)
     private String username;
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
+    private Boolean isNonLocked;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -41,7 +42,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return isNonLocked;
     }
 
     @Override

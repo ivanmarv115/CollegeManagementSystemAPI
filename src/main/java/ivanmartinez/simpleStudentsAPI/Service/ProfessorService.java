@@ -7,20 +7,20 @@ import ivanmartinez.simpleStudentsAPI.DTO.Professors.GetProfessorResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.Professors.UpdateProfessorRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface ProfessorService {
-    ResponseEntity<List<GetProfessorResponse>> getAllProfessors() throws CustomException;
+    ResponseEntity<List<GetProfessorResponse>> getAllProfessors();
 
-    ResponseEntity<Professor> getProfessorById(Long id);
+    ResponseEntity<Long> createProfessor(CreateProfessorRequest professor) throws ResourceAlreadyExistsException;
 
-    ResponseEntity<Long> createProfessor(CreateProfessorRequest professor) throws CustomException;
+    ResponseEntity<Professor> updateProfessor(UpdateProfessorRequest professor) throws ResourceNotFoundException;
 
-    ResponseEntity<Professor> updateProfessor(UpdateProfessorRequest professor) throws CustomException;
+    ResponseEntity<String> deleteProfessor(LongIdRequest id) throws ResourceNotFoundException;
 
-    ResponseEntity<Void> deleteProfessor(LongIdRequest id);
-
-    ResponseEntity<String> assignCourse(AssignCourseRequest request) throws CustomException;
+    ResponseEntity<String> assignCourse(AssignCourseRequest request) throws ResourceNotFoundException;
 }

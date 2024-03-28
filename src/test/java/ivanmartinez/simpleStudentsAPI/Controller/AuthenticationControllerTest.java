@@ -60,7 +60,7 @@ class AuthenticationControllerTest {
                 .willReturn(ResponseEntity.status(HttpStatus.OK).body(response));
 
         //test
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/authenticate")
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

@@ -1,4 +1,4 @@
-package ivanmartinez.simpleStudentsAPI.Service;
+package ivanmartinez.simpleStudentsAPI.Service.Implementations;
 
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.CreateDegreeRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.DegreeIdCourseIdRequest;
@@ -11,6 +11,7 @@ import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.DegreeRepository;
+import ivanmartinez.simpleStudentsAPI.Service.DegreeService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class DegreeServiceImpl implements DegreeService{
+public class DegreeServiceImpl implements DegreeService {
 
     private final DegreeRepository degreeRepository;
     private final CourseRepository courseRepository;

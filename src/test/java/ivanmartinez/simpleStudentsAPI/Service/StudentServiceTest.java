@@ -1,10 +1,7 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
 import ivanmartinez.simpleStudentsAPI.DTO.*;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.GetStudentsResponse;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdCourseIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdDegreeIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.*;
 import ivanmartinez.simpleStudentsAPI.Entity.*;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
@@ -13,6 +10,7 @@ import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.DegreeRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.StudentsRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.UserRepository;
+import ivanmartinez.simpleStudentsAPI.Service.Implementations.StudentServiceImpl;
 import ivanmartinez.simpleStudentsAPI.Utils.StudentUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -136,7 +134,6 @@ class StudentServiceTest {
         expectedResponse.add(GetStudentsResponse.builder()
                 .firstName("Ivan")
                 .lastName("Martinez")
-                .degree("Undergraduate")
                 .dateOfBirth("23/08/2001")
                 .username("imartinez")
                 .currentCourses(Set.of(course))
@@ -195,7 +192,7 @@ class StudentServiceTest {
     @Test
     void shouldUpdateStudent() throws CustomException {
         //given
-        Student student = Student.builder()
+        UpdateStudentRequest request = UpdateStudentRequest.builder()
                 .id(1L)
                 .firstName("Ivan Mod")
                 .lastName("Martinez")
@@ -209,10 +206,10 @@ class StudentServiceTest {
                 .dateOfBirth("23/08/2001")
                 .build());
 
-        given(studentsRepository.findById(student.getId())).willReturn(studentOptional);
+        given(studentsRepository.findById(request.getId())).willReturn(studentOptional);
 
         //when
-        underTest.updateStudent(student);
+        underTest.updateStudent(request);
 
         //test
         ArgumentCaptor<Student> studentArgumentCaptor =
@@ -220,25 +217,29 @@ class StudentServiceTest {
 
         verify(studentsRepository).save(studentArgumentCaptor.capture());
         Student capturedStudent = studentArgumentCaptor.getValue();
-        assertThat(capturedStudent).isEqualTo(student);
+
+        assertThat(capturedStudent.getId()).isEqualTo(request.getId());
+        assertThat(capturedStudent.getFirstName()).isEqualTo(request.getFirstName());
+        assertThat(capturedStudent.getLastName()).isEqualTo(request.getLastName());
+        assertThat(capturedStudent.getDateOfBirth()).isEqualTo(request.getDateOfBirth());
     }
 
     @Test
     void shouldThrow404OnUpdate() {
         //given
-        Student student = Student.builder()
-                .id(2L)
+        UpdateStudentRequest request = UpdateStudentRequest.builder()
+                .id(1L)
                 .firstName("Ivan Mod")
                 .lastName("Martinez")
                 .dateOfBirth("23/08/2001")
                 .build();
 
-        given(studentsRepository.findById(student.getId())).willReturn(Optional.empty());
+        given(studentsRepository.findById(request.getId())).willReturn(Optional.empty());
 
         //test
-        assertThatThrownBy(() -> underTest.updateStudent(student))
-                .isInstanceOf(CustomException.class)
-                .hasMessageContaining("Student with id 2 not found");
+        assertThatThrownBy(() -> underTest.updateStudent(request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Student with id 1 not found");
 
         verify(studentsRepository, never()).delete(any());
     }
@@ -246,6 +247,10 @@ class StudentServiceTest {
     @Test
     void shouldEnrollToCourse() throws CustomException {
         // given
+        Degree degree = Degree.builder()
+                .id(1L)
+                .build();
+
         StudentIdCourseIdRequest request = StudentIdCourseIdRequest.builder()
                 .courseId(1L)
                 .studentId(1L)
@@ -255,12 +260,17 @@ class StudentServiceTest {
                 .id(1L)
                 .semester(1)
                 .currentCourses(new HashSet<>())
+                .passedCourses(new HashSet<>())
+                .degree(degree)
                 .build();
 
         Course courseFound = Course.builder()
                 .id(1L)
                 .semester(1)
                 .students(new HashSet<>())
+                .coursesPrerequisites(new HashSet<>())
+                .optionalForDegree(new HashSet<>())
+                .requiredForDegree(Set.of(degree))
                 .build();
 
         given(studentsRepository.findById(request.getStudentId())).willReturn(

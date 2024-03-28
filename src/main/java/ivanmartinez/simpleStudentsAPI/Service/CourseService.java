@@ -1,11 +1,10 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CourseIdPrerequisiteIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.CourseIdPrerequisiteIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.GetCourseResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
-import ivanmartinez.simpleStudentsAPI.Entity.Course;
-import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +14,7 @@ import java.util.List;
 public interface CourseService {
     ResponseEntity<Long> createCourse(CreateCourseRequest request) throws ResourceAlreadyExistsException;
 
-    ResponseEntity<List<Course>> getAllCourses();
+    ResponseEntity<List<GetCourseResponse>> getAllCourses();
 
     ResponseEntity<String> deleteCourse(LongIdRequest longIdRequest) throws ResourceNotFoundException;
 

@@ -11,6 +11,7 @@ import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.DegreeRepository;
+import ivanmartinez.simpleStudentsAPI.Service.Implementations.DegreeServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -152,15 +153,16 @@ class DegreeServiceTest {
                 .requiredCourses(new HashSet<>())
                 .build();
 
-        Course course0 = Course.builder()
+        Course course = Course.builder()
                 .id(1L)
                 .code("M101")
                 .name("Math 101")
                 .build();
 
-        degree.getRequiredCourses().add(course0);
+        degree.getRequiredCourses().add(course);
 
         given(degreeRepository.findById(request.getDegreeId())).willReturn(Optional.of(degree));
+        given(courseRepository.findById(request.getCourseId())).willReturn(Optional.of(course));
 
         //when
         underTest.deleteRequiredCourse(request);

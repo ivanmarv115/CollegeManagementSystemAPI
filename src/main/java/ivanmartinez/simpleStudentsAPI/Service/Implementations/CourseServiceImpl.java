@@ -1,15 +1,16 @@
-package ivanmartinez.simpleStudentsAPI.Service;
+package ivanmartinez.simpleStudentsAPI.Service.Implementations;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CourseIdPrerequisiteIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.Courses.GetCourseResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.CourseIdPrerequisiteIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.*;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
-import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
+import ivanmartinez.simpleStudentsAPI.Entity.Degree;
+import ivanmartinez.simpleStudentsAPI.Entity.Professor;
+import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
+import ivanmartinez.simpleStudentsAPI.Service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class CourseServiceImpl implements CourseService{
+public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
     Logger logger = LoggerFactory.getLogger(CourseService.class);
@@ -41,8 +42,9 @@ public class CourseServiceImpl implements CourseService{
         }
 
         Course course = createCourseRequestToCourseEntity(request);
+        courseRepository.save(course);
         logger.info("COURSE CREATED");
-        return new ResponseEntity<>(courseRepository.save(course).getId(), HttpStatus.CREATED);
+        return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
 
     private Course createCourseRequestToCourseEntity(CreateCourseRequest request){
@@ -50,28 +52,58 @@ public class CourseServiceImpl implements CourseService{
                 .name(request.getName())
                 .code(request.getCode())
                 .semester(request.getSemester())
+                .professors(new HashSet<>())
                 .students(new HashSet<>())
                 .coursesPrerequisites(new HashSet<>())
+                .optionalForDegree(new HashSet<>())
+                .requiredForDegree(new HashSet<>())
                 .build();
     }
 
     @Override
-    public ResponseEntity<List<Course>> getAllCourses(){
+    public ResponseEntity<List<GetCourseResponse>> getAllCourses(){
         logger.info("***** GET ALL COURSES *****");
         List<Course> courses = courseRepository.findAll();
 
         List<GetCourseResponse> response = new ArrayList<>();
         for(Course course : courses){
-            response.add(
-                    GetCourseResponse.builder()
-                            .id(course.getId())
-                            .code(course.getCode())
-                            .build()
-            );
+            GetCourseResponse getCourseResponse = GetCourseResponse.builder()
+                    .id(course.getId())
+                    .code(course.getCode())
+                    .build();
+
+            getCourseResponse.setRequiredForDegree(new ArrayList<>());
+            for(Degree degree : course.getRequiredForDegree()){
+                getCourseResponse.getRequiredForDegree().add(degree.getName());
+            }
+            getCourseResponse.setOptionalForDegree(new ArrayList<>());
+            for(Degree degree : course.getOptionalForDegree()){
+                getCourseResponse.getOptionalForDegree().add(degree.getName());
+            }
+            getCourseResponse.setStudents(new ArrayList<>());
+            for (Student student : course.getStudents()){
+                getCourseResponse.getStudents().add(EnrolledStudent.builder()
+                                .id(student.getId())
+                                .firstName(student.getFirstName())
+                                .lastName(student.getLastName())
+                                .degree(student.getDegree() != null ? student.getDegree().getName() : "Not yet enrolled")
+                                .semester(student.getSemester())
+                        .build());
+            }
+            getCourseResponse.setProfessors(new ArrayList<>());
+            for (Professor professor : course.getProfessors()){
+                getCourseResponse.getProfessors().add(AssignedProfessor.builder()
+                        .id(professor.getId())
+                        .firstName(professor.getFirstName())
+                        .lastName(professor.getLastName())
+                        .build());
+            }
+
+            response.add(getCourseResponse);
         }
 
         logger.info("***** SUCCESS *****");
-        return new ResponseEntity<>(courses, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @Override

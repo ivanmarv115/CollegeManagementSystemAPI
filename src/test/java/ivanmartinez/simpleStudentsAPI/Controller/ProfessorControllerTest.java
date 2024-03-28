@@ -71,27 +71,6 @@ class ProfessorControllerTest {
     }
 
     @Test
-    @Disabled
-    void shouldGetProfessorById() throws Exception {
-        // Given
-        Long professorId = 1L;
-        Professor professor = Professor.builder()
-                .id(professorId)
-                .firstName("Ivan")
-                .lastName("Martinez")
-                .build();
-
-        given(professorService.getProfessorById(professorId)).willReturn(
-                ResponseEntity.ok(professor));
-
-        // Test
-        mockMvc.perform(get("/professors/{id}", professorId))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().string(objectMapper.writeValueAsString(professor)));
-    }
-
-    @Test
     void shouldCreateProfessor() throws Exception {
         // Given
         CreateProfessorRequest request = CreateProfessorRequest.builder()
@@ -142,7 +121,6 @@ class ProfessorControllerTest {
     }
 
     @Test
-    @Disabled
     void shouldDeleteProfessor() throws Exception {
         // Given
         LongIdRequest request = LongIdRequest.builder()
@@ -150,13 +128,14 @@ class ProfessorControllerTest {
                 .build();
 
         given(professorService.deleteProfessor(request)).willReturn(
-                ResponseEntity.noContent().build());
+                ResponseEntity.status(HttpStatus.ACCEPTED).body("Professor deleted"));
 
         // Test
-        mockMvc.perform(delete("/professors/{id}", request.getLongId())
+        mockMvc.perform(delete("/professors", request.getLongId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isAccepted())
+                .andExpect(content().string("Professor deleted"));
     }
 
     @Test

@@ -5,18 +5,15 @@ import ivanmartinez.simpleStudentsAPI.DTO.Professors.AssignCourseRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Professors.CreateProfessorRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Professors.GetProfessorResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.Professors.UpdateProfessorRequest;
-import ivanmartinez.simpleStudentsAPI.Entity.Course;
-import ivanmartinez.simpleStudentsAPI.Entity.Professor;
-import ivanmartinez.simpleStudentsAPI.Entity.Role;
-import ivanmartinez.simpleStudentsAPI.Entity.User;
+import ivanmartinez.simpleStudentsAPI.Entity.*;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.ProfessorRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.UserRepository;
+import ivanmartinez.simpleStudentsAPI.Service.Implementations.ProfessorServiceImpl;
 import ivanmartinez.simpleStudentsAPI.Utils.ProfessorUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -229,8 +226,27 @@ class ProfessorServiceTest {
 
 
     @Test
-    @Disabled
-    void shouldDeleteProfessor() {
+    void shouldDeleteProfessor() throws ResourceNotFoundException {
+        //given
+        LongIdRequest request = LongIdRequest.builder()
+                .longId(1L)
+                .build();
+
+        Professor professor = Professor.builder()
+                .id(1L)
+                .build();
+
+        given(professorRepository.findById(request.getLongId())).willReturn(
+                Optional.of(professor));
+
+        //when
+        underTest.deleteProfessor(request);
+
+        //test
+        ArgumentCaptor<Professor> professorArgumentCaptor = ArgumentCaptor.forClass(Professor.class);
+        verify(professorRepository).delete(professorArgumentCaptor.capture());
+        Professor capturedProfessor = professorArgumentCaptor.getValue();
+        assertThat(capturedProfessor).isEqualTo(professor);
     }
 
     @Test

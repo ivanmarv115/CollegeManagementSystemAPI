@@ -1,6 +1,6 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
-import ivanmartinez.simpleStudentsAPI.DTO.CourseIdPrerequisiteIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.CourseIdPrerequisiteIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
@@ -8,14 +8,13 @@ import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
+import ivanmartinez.simpleStudentsAPI.Service.Implementations.CourseServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -40,37 +39,32 @@ class CourseServiceTest {
         CreateCourseRequest request = CreateCourseRequest.builder()
                 .code("M101")
                 .name("Math 101")
-                .degree("Degree")
                 .semester(1)
                 .build();
 
         Course courseToCreate = Course.builder()
                 .code("M101")
                 .name("Math 101")
+                .professors(new HashSet<>())
+                .coursesPrerequisites(new HashSet<>())
+                .requiredForDegree(new HashSet<>())
+                .optionalForDegree(new HashSet<>())
+                .students(new HashSet<>())
                 .semester(1)
                 .build();
 
-        Course courseToReturn = Course.builder()
-                .id(1L)
-                .code("M101")
-                .name("Math 101")
-                .semester(1)
-                .build();
+        given(courseRepository.existsByCode(request.getCode())).willReturn(false);
 
-        given(courseRepository.save(courseToCreate)).willReturn(
-                courseToReturn
-        );
         //when
-        ResponseEntity<Long> createCourseResponse = underTest.createCourse(request);
+        underTest.createCourse(request);
 
         //test
-        ArgumentCaptor<Course> courseArgumentCaptor =
-                ArgumentCaptor.forClass(Course.class);
+        ArgumentCaptor<Course> courseArgumentCaptor = ArgumentCaptor.forClass(Course.class);
         verify(courseRepository).save(courseArgumentCaptor.capture());
 
-        assertThat(courseArgumentCaptor.getValue()).isEqualTo(courseToCreate);
-        assertThat(createCourseResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(createCourseResponse.getBody()).isNotNull();
+        assertThat(courseArgumentCaptor.getValue())
+                .usingRecursiveComparison()
+                .isEqualTo(courseToCreate);
     }
 
     @Test
@@ -109,13 +103,6 @@ class CourseServiceTest {
                 .semester(1)
                 .build();
 
-        Course courseToSave = Course.builder()
-                .id(1L)
-                .code("M101")
-                .name("Mathematics 101")
-                .semester(1)
-                .build();
-
         Optional<Course> foundCourse = Optional.ofNullable(Course.builder()
                 .id(1L)
                 .code("M101")
@@ -129,8 +116,11 @@ class CourseServiceTest {
         underTest.updateCourse(requestCourse);
 
         //test
-        verify(courseRepository).save(courseToSave);
+        ArgumentCaptor<Course> courseArgumentCaptor = ArgumentCaptor.forClass(Course.class);
 
+        verify(courseRepository).save(courseArgumentCaptor.capture());
+        assertThat(courseArgumentCaptor.getValue().getName())
+                .isEqualTo(requestCourse.getName());
     }
 
     @Test

@@ -1,13 +1,11 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
-import ivanmartinez.simpleStudentsAPI.DTO.Students.CreateStudentRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.GetStudentsResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.*;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdCourseIdRequest;
-import ivanmartinez.simpleStudentsAPI.DTO.Students.StudentIdDegreeIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
 
@@ -16,19 +14,19 @@ import java.util.Optional;
 
 public interface StudentService {
 
-    ResponseEntity<String> createStudent(CreateStudentRequest createStudentRequest) throws CustomException;
+    ResponseEntity<String> createStudent(CreateStudentRequest createStudentRequest) throws ResourceAlreadyExistsException;
 
-    ResponseEntity<List<GetStudentsResponse>> getAllStudents() throws CustomException;
+    ResponseEntity<List<GetStudentsResponse>> getAllStudents();
 
-    ResponseEntity<String> deleteStudent(LongIdRequest id) throws CustomException;
+    ResponseEntity<String> deleteStudent(LongIdRequest id) throws ResourceNotFoundException;
 
-    ResponseEntity<String> updateStudent(Student student) throws CustomException;
+    ResponseEntity<String> updateStudent(UpdateStudentRequest request) throws ResourceNotFoundException;
 
     ResponseEntity<List<Student>> getFilteredStudents(Optional<String> firstName,
                                                       Optional<String> lastName,
                                                       Optional<String> course);
 
-    ResponseEntity<String> enrollToCourse(StudentIdCourseIdRequest request) throws CustomException;
+    ResponseEntity<String> enrollToCourse(StudentIdCourseIdRequest request) throws ResourceNotFoundException, InvalidRequestException;
 
     ResponseEntity<String> addPassedCourse(StudentIdCourseIdRequest request) throws ResourceNotFoundException, InvalidRequestException;
 

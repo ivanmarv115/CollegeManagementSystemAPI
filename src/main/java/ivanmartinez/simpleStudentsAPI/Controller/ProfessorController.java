@@ -7,6 +7,8 @@ import ivanmartinez.simpleStudentsAPI.DTO.Professors.GetProfessorResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.Professors.UpdateProfessorRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
+import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Service.ProfessorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,39 +26,37 @@ public class ProfessorController {
     private ProfessorService professorService;
 
     @GetMapping
-    public ResponseEntity<List<GetProfessorResponse>> getAllProfessors() throws CustomException {
+    public ResponseEntity<List<GetProfessorResponse>> getAllProfessors() {
         return professorService.getAllProfessors();
-    }
-
-    @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Professor> getProfessorById(@PathVariable Long id) {
-        return professorService.getProfessorById(id);
     }
 
     @PostMapping
     @Secured("ROLE_ADMIN")
     public ResponseEntity<Long> createProfessor
-            (@RequestBody CreateProfessorRequest createProfessorRequest) throws CustomException {
+            (@RequestBody CreateProfessorRequest createProfessorRequest)
+            throws ResourceAlreadyExistsException {
         return professorService.createProfessor(createProfessorRequest);
     }
 
     @PutMapping
     @Secured({"ROLE_ADMIN"})
     public ResponseEntity<Professor> updateProfessor
-            (@RequestBody UpdateProfessorRequest request) throws CustomException {
+            (@RequestBody UpdateProfessorRequest request)
+            throws ResourceNotFoundException {
         return professorService.updateProfessor(request);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Void> deleteProfessor(@RequestBody LongIdRequest longIdRequest) {
+    public ResponseEntity<String> deleteProfessor(@RequestBody LongIdRequest longIdRequest)
+            throws ResourceNotFoundException {
         return professorService.deleteProfessor(longIdRequest);
     }
 
     @Secured("ROLE_ADMIN")
     @PatchMapping("/assign")
-    public ResponseEntity<String> assignCourse(@RequestBody AssignCourseRequest request) throws CustomException {
+    public ResponseEntity<String> assignCourse(@RequestBody AssignCourseRequest request)
+            throws ResourceNotFoundException {
         return professorService.assignCourse(request);
     }
 }
