@@ -1,13 +1,16 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
+import ivanmartinez.simpleStudentsAPI.DTO.ChangePasswordRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
 import ivanmartinez.simpleStudentsAPI.Entity.User;
+import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Repository.UserRepository;
 import ivanmartinez.simpleStudentsAPI.Service.Implementations.UserServiceImpl;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -28,6 +31,8 @@ class UserServiceTest {
     private UserRepository userRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private AuthenticationService authenticationService;
     @InjectMocks
     private UserServiceImpl underTest;
 
@@ -113,5 +118,34 @@ class UserServiceTest {
 
         assertThat(userArgumentCaptor.getValue().getIsNonLocked())
                 .isEqualTo(false);
+    }
+
+    @Test
+    void shouldChangePassword() throws InvalidRequestException, ResourceNotFoundException {
+        //given
+        ChangePasswordRequest request = ChangePasswordRequest.builder()
+                .currentPwd("pass")
+                .newPwd("newPass")
+                .build();
+
+        User user = User.builder()
+                .id(1L)
+                .username("imartinez")
+                .password("pass")
+                .build();
+
+        String encodedPwd = "encodedPwd";
+
+        given(authenticationService.getUser()).willReturn(user);
+        given(passwordEncoder.encode(request.getNewPwd())).willReturn(encodedPwd);
+
+        //when
+        underTest.changePassword(request);
+
+        //test
+        ArgumentCaptor<User> userArgumentCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userArgumentCaptor.capture());
+        AssertionsForClassTypes.assertThat(userArgumentCaptor.getValue().getPassword())
+                .isEqualTo(encodedPwd);
     }
 }

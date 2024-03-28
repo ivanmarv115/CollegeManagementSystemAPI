@@ -3,6 +3,7 @@ package ivanmartinez.simpleStudentsAPI.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ivanmartinez.simpleStudentsAPI.Config.JwtService;
+import ivanmartinez.simpleStudentsAPI.DTO.ChangePasswordRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
@@ -104,5 +105,25 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
                 .andExpect(content().string("User unlocked"));
+    }
+
+    @Test
+    void changePassword() throws Exception {
+        //Given
+        ChangePasswordRequest request = ChangePasswordRequest.builder()
+                .currentPwd("currentPass")
+                .newPwd("newPass")
+                .build();
+
+        given(userService.changePassword(request)).willReturn(
+                ResponseEntity.status(HttpStatus.ACCEPTED).body("Password changed")
+        );
+
+        //Test
+        mockMvc.perform(patch("/users/changePassword")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isAccepted())
+                .andExpect(content().string("Password changed"));
     }
 }

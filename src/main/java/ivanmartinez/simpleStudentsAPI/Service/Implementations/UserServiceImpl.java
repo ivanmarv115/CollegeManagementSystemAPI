@@ -1,12 +1,14 @@
 package ivanmartinez.simpleStudentsAPI.Service.Implementations;
 
-import ivanmartinez.simpleStudentsAPI.Config.JwtService;
+import ivanmartinez.simpleStudentsAPI.DTO.ChangePasswordRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.User;
+import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Repository.UserRepository;
+import ivanmartinez.simpleStudentsAPI.Service.AuthenticationService;
 import ivanmartinez.simpleStudentsAPI.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -23,10 +25,12 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
 
     Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
+    @Override
     public ResponseEntity<String> addUser(CreateUserRequest createUserRequest)
             throws ResourceAlreadyExistsException {
         logger.info("***** ADD NEW USER *****");
@@ -88,5 +92,22 @@ public class UserServiceImpl implements UserService {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("User unlocked");
     }
 
+    @Override
+    public ResponseEntity<String> changePassword(ChangePasswordRequest request)
+            throws ResourceNotFoundException, InvalidRequestException {
+        logger.info("***** CHANGE PASSWORD *****");
+        User loggedInUser = authenticationService.getUser();
+        logger.info("Username: " + loggedInUser.getUsername());
+
+        if(!loggedInUser.getPassword().equals(request.getCurrentPwd())){
+            logger.warn("***** Incorrect current password *****");
+            throw new InvalidRequestException("Incorrect current password");
+        }
+
+        loggedInUser.setPassword(passwordEncoder.encode(request.getNewPwd()));
+        userRepository.save(loggedInUser);
+        logger.info("***** PASSWORD CHANGED *****");
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Password changed");
+    }
 
 }

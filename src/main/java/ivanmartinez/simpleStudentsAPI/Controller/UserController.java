@@ -1,13 +1,16 @@
 package ivanmartinez.simpleStudentsAPI.Controller;
 
+import ivanmartinez.simpleStudentsAPI.DTO.ChangePasswordRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
+import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -35,5 +38,11 @@ public class UserController {
     public ResponseEntity<String> unlockUser(@RequestBody LongIdRequest request)
             throws ResourceNotFoundException {
         return userService.unlockUser(request);
+    }
+
+    @PatchMapping("/changePassword")
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request)
+            throws InvalidRequestException, ResourceNotFoundException {
+        return userService.changePassword(request);
     }
 }
