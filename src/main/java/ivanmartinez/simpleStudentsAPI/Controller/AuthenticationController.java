@@ -2,7 +2,6 @@ package ivanmartinez.simpleStudentsAPI.Controller;
 
 import ivanmartinez.simpleStudentsAPI.DTO.AuthenticationRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.AuthenticationResponse;
-import ivanmartinez.simpleStudentsAPI.DTO.RegisterRequest;
 import ivanmartinez.simpleStudentsAPI.Service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

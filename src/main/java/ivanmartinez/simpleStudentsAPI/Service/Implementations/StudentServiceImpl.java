@@ -6,7 +6,6 @@ import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Degree;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import ivanmartinez.simpleStudentsAPI.Entity.User;
-import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
@@ -96,27 +95,28 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public ResponseEntity<List<Student>> getFilteredStudents(Optional<String> firstNameParam,
-                                                             Optional<String> lastNameParam,
-                                                             Optional<String> courseParam) {
-        logger.info("***** GET STUDENTS BY CALLED *****");
-        String firstName = firstNameParam.orElse("");
-        String lastName = lastNameParam.orElse("");
-        String course = courseParam.orElse("");
+    public ResponseEntity<List<GetStudentsResponse>> getStudentsContaining(GetByRequest request) {
+        logger.info("***** GET STUDENTS CONTAINING *****");
+        logger.info("Request: " + request);
 
-        logger.info(" FM: "+ firstName
-                + " LM: " + lastName + " C: " + course);
-
-        List<Student> students = studentsRepository
-                .findByFirstNameContainingAndLastNameContaining(firstName, lastName);
-
-        if(!students.isEmpty()){
-            logger.info("***** FOUND STUDENTS *****");
-            return new ResponseEntity<>(students, HttpStatus.OK);
+        List<GetStudentsResponse> response = new ArrayList<>();
+        if(request.getId() != null){
+            Optional<Student> studentOptional = studentsRepository.findById(request.getId());
+            response.add(studentEntityToStudentResponse(studentOptional.get()));
+        } else if (request.getParam() != null) {
+            List<Student> students = studentsRepository
+                    .getAllBy(request.getParam());
+            for(Student student : students){
+                GetStudentsResponse responseElement = studentEntityToStudentResponse(student);
+                if(student.getDegree() != null){
+                    responseElement.setDegree(student.getDegree().getName());
+                }
+                response.add(responseElement);
+            }
         }
 
-        logger.info("***** NO STUDENTS FOUND *****");
-        return new ResponseEntity<>(HttpStatus.OK);
+        logger.info("***** REQUEST OK *****");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override

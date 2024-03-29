@@ -1,5 +1,6 @@
 package ivanmartinez.simpleStudentsAPI.Service;
 
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Students.*;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
@@ -18,13 +19,11 @@ public interface StudentService {
 
     ResponseEntity<List<GetStudentsResponse>> getAllStudents();
 
+    ResponseEntity<List<GetStudentsResponse>> getStudentsContaining(GetByRequest request);
+
     ResponseEntity<String> deleteStudent(LongIdRequest id) throws ResourceNotFoundException;
 
     ResponseEntity<String> updateStudent(UpdateStudentRequest request) throws ResourceNotFoundException;
-
-    ResponseEntity<List<Student>> getFilteredStudents(Optional<String> firstName,
-                                                      Optional<String> lastName,
-                                                      Optional<String> course);
 
     ResponseEntity<String> enrollToCourse(StudentIdCourseIdRequest request) throws ResourceNotFoundException, InvalidRequestException;
 

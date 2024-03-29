@@ -1,5 +1,6 @@
 package ivanmartinez.simpleStudentsAPI.Controller;
 
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Students.*;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
@@ -30,12 +31,10 @@ public class StudentsController {
     }
 
     @GetMapping("/by")
-    public ResponseEntity<List<Student>> getFilteredStudents(@RequestParam(required = false) Optional<String> firstName,
-                                                             @RequestParam(required = false) Optional<String> lastName,
-                                                             @RequestParam(required = false) Optional<String> course){
-
-
-        return studentService.getFilteredStudents(firstName, lastName, course);
+    public ResponseEntity<List<GetStudentsResponse>> getFilteredStudents(
+            @RequestBody GetByRequest request
+            ){
+        return studentService.getStudentsContaining(request);
     }
 
     @Secured("ROLE_ADMIN")
