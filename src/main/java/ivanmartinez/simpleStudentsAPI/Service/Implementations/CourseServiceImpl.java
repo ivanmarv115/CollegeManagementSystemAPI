@@ -2,7 +2,9 @@ package ivanmartinez.simpleStudentsAPI.Service.Implementations;
 
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.CourseIdPrerequisiteIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.*;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.GetStudentsResponse;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Degree;
 import ivanmartinez.simpleStudentsAPI.Entity.Professor;
@@ -67,43 +69,73 @@ public class CourseServiceImpl implements CourseService {
 
         List<GetCourseResponse> response = new ArrayList<>();
         for(Course course : courses){
-            GetCourseResponse getCourseResponse = GetCourseResponse.builder()
-                    .id(course.getId())
-                    .code(course.getCode())
-                    .build();
-
-            getCourseResponse.setRequiredForDegree(new ArrayList<>());
-            for(Degree degree : course.getRequiredForDegree()){
-                getCourseResponse.getRequiredForDegree().add(degree.getName());
-            }
-            getCourseResponse.setOptionalForDegree(new ArrayList<>());
-            for(Degree degree : course.getOptionalForDegree()){
-                getCourseResponse.getOptionalForDegree().add(degree.getName());
-            }
-            getCourseResponse.setStudents(new ArrayList<>());
-            for (Student student : course.getStudents()){
-                getCourseResponse.getStudents().add(EnrolledStudent.builder()
-                                .id(student.getId())
-                                .firstName(student.getFirstName())
-                                .lastName(student.getLastName())
-                                .degree(student.getDegree() != null ? student.getDegree().getName() : "Not yet enrolled")
-                                .semester(student.getSemester())
-                        .build());
-            }
-            getCourseResponse.setProfessors(new ArrayList<>());
-            for (Professor professor : course.getProfessors()){
-                getCourseResponse.getProfessors().add(AssignedProfessor.builder()
-                        .id(professor.getId())
-                        .firstName(professor.getFirstName())
-                        .lastName(professor.getLastName())
-                        .build());
-            }
-
+            GetCourseResponse getCourseResponse = courseEntityToResponse(course);
             response.add(getCourseResponse);
         }
 
         logger.info("***** SUCCESS *****");
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    private GetCourseResponse courseEntityToResponse(Course course){
+        GetCourseResponse getCourseResponse = GetCourseResponse.builder()
+                .id(course.getId())
+                .name(course.getName())
+                .code(course.getCode())
+                .build();
+
+        getCourseResponse.setRequiredForDegree(new ArrayList<>());
+        for(Degree degree : course.getRequiredForDegree()){
+            getCourseResponse.getRequiredForDegree().add(degree.getName());
+        }
+        getCourseResponse.setOptionalForDegree(new ArrayList<>());
+        for(Degree degree : course.getOptionalForDegree()){
+            getCourseResponse.getOptionalForDegree().add(degree.getName());
+        }
+        getCourseResponse.setStudents(new ArrayList<>());
+        for (Student student : course.getStudents()){
+            getCourseResponse.getStudents().add(EnrolledStudent.builder()
+                    .id(student.getId())
+                    .firstName(student.getFirstName())
+                    .lastName(student.getLastName())
+                    .degree(student.getDegree() != null ? student.getDegree().getName() : "Not yet enrolled")
+                    .semester(student.getSemester())
+                    .build());
+        }
+        getCourseResponse.setProfessors(new ArrayList<>());
+        for (Professor professor : course.getProfessors()){
+            getCourseResponse.getProfessors().add(AssignedProfessor.builder()
+                    .id(professor.getId())
+                    .firstName(professor.getFirstName())
+                    .lastName(professor.getLastName())
+                    .build());
+        }
+
+        return getCourseResponse;
+    }
+
+    @Override
+    public ResponseEntity<List<GetCourseResponse>> getCoursesContaining(GetByRequest request) throws ResourceNotFoundException {
+        logger.info("***** GET COURSES CONTAINING *****");
+        logger.info("Request: " + request);
+
+        List<GetCourseResponse> response = new ArrayList<>();
+        if(request.getId() != null){
+            Optional<Course> courseOptional = courseRepository.findById(request.getId());
+            if (courseOptional.isEmpty()) {
+                throw new ResourceNotFoundException("Course not found");
+            }
+            response.add(courseEntityToResponse(courseOptional.get()));
+        } else if (request.getParam() != null) {
+            List<Course> courses = courseRepository.getAllBy(request.getParam());
+            for(Course course : courses){
+                GetCourseResponse responseElement = courseEntityToResponse(course);
+                response.add(responseElement);
+            }
+        }
+
+        logger.info("***** REQUEST OK *****");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -185,6 +217,5 @@ public class CourseServiceImpl implements CourseService {
         logger.info("***** REMOVED SUCCESSFULLY *****");
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Successfully removed prerequisite");
     }
-
 
 }

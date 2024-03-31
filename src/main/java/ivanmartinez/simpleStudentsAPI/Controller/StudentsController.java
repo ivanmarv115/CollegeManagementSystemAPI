@@ -31,9 +31,9 @@ public class StudentsController {
     }
 
     @GetMapping("/by")
-    public ResponseEntity<List<GetStudentsResponse>> getFilteredStudents(
+    public ResponseEntity<List<GetStudentsResponse>> getStudentsContaining(
             @RequestBody GetByRequest request
-            ){
+            ) throws ResourceNotFoundException {
         return studentService.getStudentsContaining(request);
     }
 

@@ -3,6 +3,7 @@ package ivanmartinez.simpleStudentsAPI.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ivanmartinez.simpleStudentsAPI.Config.JwtService;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Students.*;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
@@ -50,7 +51,7 @@ class StudentsControllerTest {
     }
 
     @Test
-    void shouldGetStudents() throws Exception {
+    void shouldGetAllStudents() throws Exception {
         //given
         List<GetStudentsResponse> response = new ArrayList<>();
         response.add(GetStudentsResponse.builder()
@@ -66,6 +67,35 @@ class StudentsControllerTest {
 
         //test
         mockMvc.perform(get("/students"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(objectMapper.writeValueAsString(response)));
+
+    }
+
+    @Test
+    void shouldGetStudentsContaining() throws Exception {
+        //given
+        GetByRequest request = GetByRequest.builder()
+                .param("Ivan")
+                .build();
+
+        List<GetStudentsResponse> response = new ArrayList<>();
+        response.add(GetStudentsResponse.builder()
+                .firstName("Ivan")
+                .lastName("Martinez")
+                .degree("Undergraduate")
+                .dateOfBirth("23/08/2001")
+                .username("imartinez")
+                .build());
+
+        given(studentService.getStudentsContaining(request)).willReturn(
+                ResponseEntity.status(HttpStatus.OK).body(response));
+
+        //test
+        mockMvc.perform(get("/students/by")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().string(objectMapper.writeValueAsString(response)));

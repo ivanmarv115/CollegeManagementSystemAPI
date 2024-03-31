@@ -95,13 +95,16 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public ResponseEntity<List<GetStudentsResponse>> getStudentsContaining(GetByRequest request) {
+    public ResponseEntity<List<GetStudentsResponse>> getStudentsContaining(GetByRequest request) throws ResourceNotFoundException {
         logger.info("***** GET STUDENTS CONTAINING *****");
         logger.info("Request: " + request);
 
         List<GetStudentsResponse> response = new ArrayList<>();
         if(request.getId() != null){
             Optional<Student> studentOptional = studentsRepository.findById(request.getId());
+            if(studentOptional.isEmpty()){
+                throw new ResourceNotFoundException("Student not found");
+            }
             response.add(studentEntityToStudentResponse(studentOptional.get()));
         } else if (request.getParam() != null) {
             List<Student> students = studentsRepository

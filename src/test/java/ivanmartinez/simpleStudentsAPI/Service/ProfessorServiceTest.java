@@ -52,7 +52,7 @@ class ProfessorServiceTest {
     private String defaultPassword;
 
     @Test
-    void shouldGetAllProfessors() throws CustomException {
+    void shouldGetAllProfessors() {
         //given
         User user = User.builder()
                 .username("imartinezprof")
@@ -89,7 +89,47 @@ class ProfessorServiceTest {
     }
 
     @Test
-    void shouldCreateProfessor() throws CustomException, CustomException {
+    void shouldGetProfessorsContaining() throws ResourceNotFoundException {
+        //given
+        GetByRequest request = GetByRequest.builder()
+                .param("Iv")
+                .build();
+
+        User user = User.builder()
+                .username("imartinezprof")
+                .role(Role.PROFESSOR)
+                .build();
+
+        List<Professor> professors = new ArrayList<>();
+        professors.add(
+                Professor.builder()
+                        .firstName("Ivan")
+                        .lastName("Martinez")
+                        .user(user)
+                        .build()
+        );
+
+        List<GetProfessorResponse> expectedResponse = new ArrayList<>();
+        expectedResponse.add(GetProfessorResponse.builder()
+                .firstName("Ivan")
+                .lastName("Martinez")
+                .username("imartinezprof")
+                .build());
+
+        given(professorRepository.getAllBy(request.getParam())).willReturn(professors);
+        given(professorUtils.professorToGetProfessorResponse(professors.get(0))).willReturn(
+                expectedResponse.get(0)
+        );
+
+        //when
+        ResponseEntity<List<GetProfessorResponse>> response = underTest.getProfessorsContaining(request);
+
+        //test
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
+    }
+
+    @Test
+    void shouldCreateProfessor() throws ResourceAlreadyExistsException {
         //given
         CreateProfessorRequest createProfessorRequest = CreateProfessorRequest.builder()
                 .firstName("Ivan")
@@ -139,7 +179,7 @@ class ProfessorServiceTest {
     }
 
     @Test
-    void shouldThrowAlreadyExistsOnCreate() throws CustomException {
+    void shouldThrowAlreadyExistsOnCreate() {
         //given
         CreateProfessorRequest createProfessorRequest = CreateProfessorRequest.builder()
                 .firstName("Ivan")
@@ -163,7 +203,7 @@ class ProfessorServiceTest {
     }
 
     @Test
-    void shouldUpdateProfessor() throws CustomException {
+    void shouldUpdateProfessor() throws ResourceNotFoundException {
         //given
         User user = User.builder()
                 .username("imartinezprof")
@@ -250,7 +290,7 @@ class ProfessorServiceTest {
     }
 
     @Test
-    void shouldAssignCourse() throws CustomException {
+    void shouldAssignCourse() throws ResourceNotFoundException {
         //given
         AssignCourseRequest request = AssignCourseRequest.builder()
                 .professorId(1L)

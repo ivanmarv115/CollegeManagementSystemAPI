@@ -3,6 +3,7 @@ package ivanmartinez.simpleStudentsAPI.Service;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.CreateDegreeRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.DegreeIdCourseIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.UpdateDegreeRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Degree;
@@ -12,12 +13,14 @@ import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import ivanmartinez.simpleStudentsAPI.Repository.DegreeRepository;
 import ivanmartinez.simpleStudentsAPI.Service.Implementations.DegreeServiceImpl;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 import java.util.*;
 
@@ -71,6 +74,28 @@ class DegreeServiceTest {
 
         //test
         verify(degreeRepository).findAll();
+    }
+
+    @Test
+    void shouldGetAllContaining() throws ResourceNotFoundException {
+        //given
+        GetByRequest request = GetByRequest.builder()
+                .param("Comp")
+                .build();
+
+        List<Degree> degrees = new ArrayList<>();
+        degrees.add(Degree.builder()
+                .id(1L).name("Computer Science Engineering").build());
+        degrees.add(Degree.builder()
+                .id(2L).name("Industrial Engineering").build());
+
+        given(degreeRepository.getAllBy(request.getParam())).willReturn(degrees);
+
+        //when
+        ResponseEntity<List<Degree>> response = underTest.getDegreesContaining(request);
+
+        //test
+        AssertionsForClassTypes.assertThat(response.getBody()).isEqualTo(degrees);
     }
 
     @Test

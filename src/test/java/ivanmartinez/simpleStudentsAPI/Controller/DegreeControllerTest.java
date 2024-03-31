@@ -5,6 +5,7 @@ import ivanmartinez.simpleStudentsAPI.Config.JwtService;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.CreateDegreeRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.DegreeIdCourseIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.UpdateDegreeRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Degree;
 import ivanmartinez.simpleStudentsAPI.Service.DegreeService;
@@ -80,7 +81,33 @@ class DegreeControllerTest {
                         .body(degrees));
 
         // test
-        mockMvc.perform(get("/degrees"))
+        mockMvc.perform(get("/degrees/all"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(objectMapper.writeValueAsString(degrees)));
+    }
+
+    @Test
+    void shouldGetDegreesContaining() throws Exception {
+        // given
+        GetByRequest request = GetByRequest.builder()
+                .param("Comp")
+                .build();
+
+        List<Degree> degrees = new ArrayList<>();
+
+        degrees.add(Degree.builder()
+                .id(1L)
+                .name("Computer Science")
+                .build());
+
+        given(degreeService.getDegreesContaining(request))
+                .willReturn(ResponseEntity.status(HttpStatus.OK)
+                        .body(degrees));
+
+        // test
+        mockMvc.perform(get("/degrees/by")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(content().string(objectMapper.writeValueAsString(degrees)));
     }

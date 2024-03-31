@@ -4,6 +4,7 @@ import ivanmartinez.simpleStudentsAPI.Entity.Degree;
 import ivanmartinez.simpleStudentsAPI.Entity.Student;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.util.List;
@@ -14,7 +15,9 @@ import static org.junit.jupiter.api.Assertions.*;
 public class StudentsRepositoryTest {
 
     @Autowired
-    private StudentsRepository studentsRepository;
+    private StudentsRepository underTest;
+    @Autowired
+    private DegreeRepository degreeRepository;
 
     @Test
     void shouldGetAllBy() {
@@ -33,30 +36,32 @@ public class StudentsRepositoryTest {
 
         Degree degree = new Degree();
         degree.setName("Computer Science");
+        degreeRepository.save(degree);
+
         student1.setDegree(degree);
         student2.setDegree(degree);
 
-        studentsRepository.save(student1);
-        studentsRepository.save(student2);
+        underTest.save(student1);
+        underTest.save(student2);
 
         // When
-        List<Student> students = studentsRepository.getAllBy("Joh");
+        List<Student> students = underTest.getAllBy("Joh");
 
         // Test
         assertEquals(1, students.size());
         assertEquals("John", students.get(0).getFirstName());
 
-        students = studentsRepository.getAllBy("Smi");
+        students = underTest.getAllBy("Smi");
         assertEquals(1, students.size());
         assertEquals("Jane", students.get(0).getFirstName());
 
-        students = studentsRepository.getAllBy("1");
+        students = underTest.getAllBy("1");
         assertEquals(2, students.size());
 
-        students = studentsRepository.getAllBy("Computer");
+        students = underTest.getAllBy("Computer");
         assertEquals(2, students.size());
 
-        students = studentsRepository.getAllBy("NonExistingValue");
+        students = underTest.getAllBy("NonExistingValue");
         assertEquals(0, students.size());
     }
 }

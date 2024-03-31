@@ -12,12 +12,13 @@ import java.util.Optional;
 @Repository
 public interface StudentsRepository extends JpaRepository<Student, Long> {
     @Query("""
-        SELECT s FROM Student s LEFT JOIN s.degree d 
-        WHERE LOWER(s.firstName) LIKE %:param% 
-        OR LOWER(s.lastName) LIKE %:param% 
-        OR LOWER(s.semester) LIKE %:param% 
-        OR LOWER(s.dateOfBirth) LIKE %:param% 
-        OR LOWER(d.name) LIKE %:param%"
+         SELECT s FROM Student s
+         LEFT JOIN s.degree d
+         WHERE LOWER(s.firstName) LIKE CONCAT('%', LOWER(:param), '%')
+         OR LOWER(s.lastName) LIKE CONCAT('%', LOWER(:param), '%')
+         OR LOWER(s.dateOfBirth) LIKE CONCAT('%', LOWER(:param), '%')
+         OR CAST(s.semester AS string) LIKE CONCAT('%', LOWER(:param), '%')
+         OR LOWER(d.name) LIKE CONCAT('%', LOWER(:param), '%')
         """
     )
     List<Student> getAllBy(@Param("param") String param);

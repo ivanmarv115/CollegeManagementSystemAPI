@@ -19,7 +19,7 @@ public interface StudentService {
 
     ResponseEntity<List<GetStudentsResponse>> getAllStudents();
 
-    ResponseEntity<List<GetStudentsResponse>> getStudentsContaining(GetByRequest request);
+    ResponseEntity<List<GetStudentsResponse>> getStudentsContaining(GetByRequest request) throws ResourceNotFoundException;
 
     ResponseEntity<String> deleteStudent(LongIdRequest id) throws ResourceNotFoundException;
 

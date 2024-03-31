@@ -1,5 +1,6 @@
 package ivanmartinez.simpleStudentsAPI.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +26,7 @@ public class User implements UserDetails {
     private Long id;
     @Column(unique = true)
     private String username;
+    @JsonIgnore
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;

@@ -2,7 +2,10 @@ package ivanmartinez.simpleStudentsAPI.Service;
 
 import ivanmartinez.simpleStudentsAPI.DTO.ChangePasswordRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.GetProfessorResponse;
+import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
 import ivanmartinez.simpleStudentsAPI.Entity.User;
 import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
@@ -17,8 +20,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,6 +55,7 @@ class UserServiceTest {
                 .username("admin")
                 .password(passwordEncoder.encode("admin"))
                 .role(Role.ADMIN)
+                .isNonLocked(true)
                 .build();
 
         given(userRepository.findByUsername(request.getUsername())).willReturn(
@@ -64,6 +71,51 @@ class UserServiceTest {
         assertThat(userArgumentCaptor.getValue())
                 .usingRecursiveComparison()
                 .isEqualTo(user);
+    }
+
+    @Test
+    void shouldGetAllUsers(){
+        //given
+        User user = User.builder()
+                .username("imartinezprof")
+                .role(Role.PROFESSOR)
+                .build();
+
+        List<User> expectedResponse = new ArrayList<>();
+        expectedResponse.add(user);
+
+        given(userRepository.findAll()).willReturn(expectedResponse);
+
+        //when
+        ResponseEntity<List<User>> response = underTest.getAllUsers();
+
+        //test
+        verify(userRepository).findAll();
+        AssertionsForClassTypes.assertThat(response.getBody()).isEqualTo(expectedResponse);
+    }
+
+    @Test
+    void shouldGetUsersContaining() throws ResourceNotFoundException {
+        //given
+        GetByRequest request = GetByRequest.builder()
+                .param("imar")
+                .build();
+
+        User user = User.builder()
+                .username("imartinezprof")
+                .role(Role.PROFESSOR)
+                .build();
+
+        List<User> users = new ArrayList<>();
+        users.add(user);
+
+        given(userRepository.getAllBy(request.getParam())).willReturn(users);
+
+        //when
+        ResponseEntity<List<User>> response = underTest.getUsersContaining(request);
+
+        //test
+        AssertionsForClassTypes.assertThat(response.getBody()).isEqualTo(users);
     }
 
     @Test

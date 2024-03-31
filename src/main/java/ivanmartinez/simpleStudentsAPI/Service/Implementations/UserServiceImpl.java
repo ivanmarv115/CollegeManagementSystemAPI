@@ -2,7 +2,10 @@ package ivanmartinez.simpleStudentsAPI.Service.Implementations;
 
 import ivanmartinez.simpleStudentsAPI.DTO.ChangePasswordRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Professors.GetProfessorResponse;
+import ivanmartinez.simpleStudentsAPI.Entity.Professor;
 import ivanmartinez.simpleStudentsAPI.Entity.User;
 import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
@@ -18,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -49,6 +54,7 @@ public class UserServiceImpl implements UserService {
             throw new ResourceAlreadyExistsException("Username already exists");
         }
         User user = createUserRequestToUserEntity(createUserRequest);
+        user.setIsNonLocked(true);
         userRepository.save(user);
         logger.info("New user created");
         return user;
@@ -60,6 +66,35 @@ public class UserServiceImpl implements UserService {
                 .password(passwordEncoder.encode(createUserRequest.getPassword()))
                 .role(createUserRequest.getRole())
                 .build();
+    }
+
+    @Override
+    public ResponseEntity<List<User>> getAllUsers() {
+        logger.info("***** GET ALL USERS *****");
+        List<User> users = userRepository.findAll();
+        logger.info("***** OK *****");
+        return ResponseEntity.status(HttpStatus.OK).body(users);
+    }
+
+    @Override
+    public ResponseEntity<List<User>> getUsersContaining(GetByRequest request) throws ResourceNotFoundException {
+        logger.info("***** GET USERS CONTAINING *****");
+        logger.info("Request: " + request);
+
+        List<User> response = new ArrayList<>();
+        if(request.getId() != null){
+            Optional<User> userOptional = userRepository.findById(request.getId());
+            if (userOptional.isEmpty()) {
+                throw new ResourceNotFoundException("User not found");
+            }
+            response.add(userOptional.get());
+        } else if (request.getParam() != null) {
+            List<User> users = userRepository.getAllBy(request.getParam());
+            response.addAll(users);
+        }
+
+        logger.info("***** REQUEST OK *****");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override

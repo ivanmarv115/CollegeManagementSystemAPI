@@ -1,8 +1,10 @@
 package ivanmartinez.simpleStudentsAPI.Service.Implementations;
 
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.GetCourseResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.CreateDegreeRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.DegreeIdCourseIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.UpdateDegreeRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
 import ivanmartinez.simpleStudentsAPI.Entity.Degree;
@@ -19,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,6 +56,27 @@ public class DegreeServiceImpl implements DegreeService {
         logger.info("***** GET ALL DEGREES *****");
         return ResponseEntity.status(HttpStatus.OK)
                 .body(degreeRepository.findAll());
+    }
+
+    @Override
+    public ResponseEntity<List<Degree>> getDegreesContaining(GetByRequest request) throws ResourceNotFoundException {
+        logger.info("***** GET DEGREES CONTAINING *****");
+        logger.info("Request: " + request);
+        List<Degree> response = new ArrayList<>();
+
+        if(request.getId() != null){
+            Optional<Degree> degreeOptional = degreeRepository.findById(request.getId());
+            if (degreeOptional.isEmpty()) {
+                throw new ResourceNotFoundException("Degree not found");
+            }
+            response.add(degreeOptional.get());
+        } else if (request.getParam() != null) {
+            List<Degree> degrees = degreeRepository.getAllBy(request.getParam());
+            response.addAll(degrees);
+        }
+
+        logger.info("***** REQUEST OK *****");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -209,6 +233,5 @@ public class DegreeServiceImpl implements DegreeService {
         logger.info("***** UPDATED SUCCESSFULLY *****");
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Degree deleted successfully");
     }
-
 
 }

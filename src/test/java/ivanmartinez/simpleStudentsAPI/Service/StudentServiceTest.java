@@ -149,6 +149,52 @@ class StudentServiceTest {
     }
 
     @Test
+    void shouldGetStudentsContaining() throws ResourceNotFoundException {
+        //given
+        GetByRequest request = GetByRequest.builder()
+                .param("i")
+                .build();
+
+        User user = User.builder()
+                .username("imartinez")
+                .role(Role.STUDENT)
+                .build();
+
+        Course course = Course.builder()
+                .name("Course 1")
+                .build();
+
+        Student student = Student.builder()
+                .firstName("Ivan")
+                .lastName("Martinez")
+                .dateOfBirth("23/08/2001")
+                .user(user)
+                .currentCourses(Set.of(course))
+                .build();
+
+        course.setStudents(Set.of(student));
+
+        ArrayList<Student> students = new ArrayList<>();
+        students.add(student);
+
+        ArrayList<GetStudentsResponse> expectedResponse = new ArrayList<>();
+        expectedResponse.add(GetStudentsResponse.builder()
+                .firstName("Ivan")
+                .lastName("Martinez")
+                .dateOfBirth("23/08/2001")
+                .username("imartinez")
+                .currentCourses(Set.of(course))
+                .build());
+
+        given(studentsRepository.getAllBy(request.getParam())).willReturn(students);
+        //when
+        ResponseEntity<List<GetStudentsResponse>> response = underTest.getStudentsContaining(request);
+
+        //test
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
+    }
+
+    @Test
     void shouldDeleteStudent() throws CustomException {
         //given
         LongIdRequest longIdRequest = LongIdRequest.builder()

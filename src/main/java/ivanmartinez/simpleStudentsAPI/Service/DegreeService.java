@@ -3,6 +3,7 @@ package ivanmartinez.simpleStudentsAPI.Service;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.CreateDegreeRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.DegreeIdCourseIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.UpdateDegreeRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Degree;
 import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
@@ -28,4 +29,6 @@ public interface DegreeService {
     ResponseEntity<String> deleteDegree(LongIdRequest request) throws ResourceNotFoundException;
 
     ResponseEntity<String> updateDegree(UpdateDegreeRequest request) throws ResourceNotFoundException;
+
+    ResponseEntity<List<Degree>> getDegreesContaining(GetByRequest request) throws ResourceNotFoundException;
 }

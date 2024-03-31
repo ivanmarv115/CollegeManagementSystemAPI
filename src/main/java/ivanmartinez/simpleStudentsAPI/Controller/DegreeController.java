@@ -3,6 +3,7 @@ package ivanmartinez.simpleStudentsAPI.Controller;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.CreateDegreeRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.DegreeIdCourseIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Degrees.UpdateDegreeRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Degree;
 import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
@@ -29,9 +30,16 @@ public class DegreeController {
         return degreeService.createDegree(request);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Degree>> getAllCourses(){
+    @GetMapping("/all")
+    public ResponseEntity<List<Degree>> getAllDegrees(){
         return degreeService.getAllDegrees();
+    }
+
+    @GetMapping("/by")
+    public ResponseEntity<List<Degree>> getDegreesContaining(
+            @RequestBody GetByRequest request
+            ) throws ResourceNotFoundException {
+        return degreeService.getDegreesContaining(request);
     }
 
     @PatchMapping("/addRequiredCourse")

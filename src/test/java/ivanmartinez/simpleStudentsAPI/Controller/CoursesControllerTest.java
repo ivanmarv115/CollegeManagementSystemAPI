@@ -6,6 +6,7 @@ import ivanmartinez.simpleStudentsAPI.DTO.Courses.CourseIdPrerequisiteIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.GetCourseResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.Service.CourseService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -84,7 +85,35 @@ class CoursesControllerTest {
                         .body(courses));
 
         //test
-        mockMvc.perform(get("/courses"))
+        mockMvc.perform(get("/courses/all"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(objectMapper.writeValueAsString(courses)));
+    }
+
+    @Test
+    void shouldGetCoursesContaining() throws Exception {
+        //given
+        GetByRequest request = GetByRequest.builder()
+                .param("Math")
+                .build();
+
+        List<GetCourseResponse> courses = new ArrayList<>();
+
+        courses.add(GetCourseResponse.builder()
+                .id(1L)
+                .code("M101")
+                .name("Math 101")
+                .semester(1)
+                .build());
+
+        given(courseService.getCoursesContaining(request))
+                .willReturn(ResponseEntity.status(HttpStatus.OK)
+                        .body(courses));
+
+        //test
+        mockMvc.perform(get("/courses/by")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(content().string(objectMapper.writeValueAsString(courses)));
     }

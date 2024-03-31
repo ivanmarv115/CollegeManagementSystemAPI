@@ -2,7 +2,9 @@ package ivanmartinez.simpleStudentsAPI.Controller;
 
 import ivanmartinez.simpleStudentsAPI.DTO.ChangePasswordRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
+import ivanmartinez.simpleStudentsAPI.Entity.User;
 import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
@@ -12,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -24,6 +28,20 @@ public class UserController {
     public ResponseEntity<String> addUser(@RequestBody CreateUserRequest request)
             throws ResourceAlreadyExistsException {
         return userService.addUser(request);
+    }
+
+    @GetMapping("/all")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<List<User>> getAllUsers(){
+        return userService.getAllUsers();
+    }
+
+    @GetMapping("/by")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<List<User>> getUsersContaining(
+            @RequestBody GetByRequest request
+            ) throws ResourceNotFoundException {
+        return userService.getUsersContaining(request);
     }
 
     @PatchMapping("/lockUser")

@@ -1,16 +1,15 @@
 package ivanmartinez.simpleStudentsAPI.Controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ivanmartinez.simpleStudentsAPI.Config.JwtService;
 import ivanmartinez.simpleStudentsAPI.DTO.ChangePasswordRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Students.GetStudentsResponse;
 import ivanmartinez.simpleStudentsAPI.Entity.Role;
-import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
-import ivanmartinez.simpleStudentsAPI.Service.ProfessorService;
+import ivanmartinez.simpleStudentsAPI.Entity.User;
 import ivanmartinez.simpleStudentsAPI.Service.UserService;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +22,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -67,6 +69,56 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(content().string("User created"));
+    }
+
+    @Test
+    void shouldGetAllUsers() throws Exception {
+        //given
+        List<User> response = new ArrayList<>();
+        response.add(User.builder()
+                .id(1L)
+                .username("imartinez")
+                .role(Role.ADMIN)
+                .isNonLocked(true)
+                .build());
+
+        given(userService.getAllUsers()).willReturn(
+                ResponseEntity.status(HttpStatus.OK).body(response));
+
+        //test
+        mockMvc.perform(get("/users/all"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(objectMapper.writeValueAsString(response)));
+
+    }
+
+    @Test
+    void shouldGetUsersContaining() throws Exception {
+        //given
+        GetByRequest request = GetByRequest.builder()
+                .param("Ivan")
+                .build();
+
+        List<User> response = new ArrayList<>();
+        response.add(User.builder()
+                    .id(1L)
+                    .username("imartinez")
+                    .role(Role.ADMIN)
+                    .isNonLocked(true)
+                    .build());
+
+        given(userService.getUsersContaining(request)).willReturn(
+                ResponseEntity.status(HttpStatus.OK).body(response));
+
+        //test
+        mockMvc.perform(get("/users/by")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(objectMapper.writeValueAsString(response)));
+
     }
 
     @Test

@@ -1,6 +1,7 @@
 package ivanmartinez.simpleStudentsAPI.Service.Implementations;
 
 import ivanmartinez.simpleStudentsAPI.DTO.*;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.GetCourseResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.Professors.AssignCourseRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Professors.CreateProfessorRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Professors.GetProfessorResponse;
@@ -52,6 +53,31 @@ public class ProfessorServiceImpl implements ProfessorService {
         }
 
         return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<List<GetProfessorResponse>> getProfessorsContaining(GetByRequest request)
+            throws ResourceNotFoundException {
+        logger.info("***** GET PROFESSORS CONTAINING *****");
+        logger.info("Request: " + request);
+
+        List<GetProfessorResponse> response = new ArrayList<>();
+        if(request.getId() != null){
+            Optional<Professor> professorOptional = professorRepository.findById(request.getId());
+            if (professorOptional.isEmpty()) {
+                throw new ResourceNotFoundException("Professor not found");
+            }
+            response.add(professorUtils.professorToGetProfessorResponse(professorOptional.get()));
+        } else if (request.getParam() != null) {
+            List<Professor> professors = professorRepository.getAllBy(request.getParam());
+            for(Professor professor : professors){
+                GetProfessorResponse responseElement = professorUtils.professorToGetProfessorResponse(professor);
+                response.add(responseElement);
+            }
+        }
+
+        logger.info("***** REQUEST OK *****");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -148,4 +174,5 @@ public class ProfessorServiceImpl implements ProfessorService {
         logger.info("SUCCESS");
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Assigned successfully");
     }
+
 }

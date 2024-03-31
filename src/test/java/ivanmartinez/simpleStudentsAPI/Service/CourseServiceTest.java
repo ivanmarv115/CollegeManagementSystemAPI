@@ -2,6 +2,8 @@ package ivanmartinez.simpleStudentsAPI.Service;
 
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.CourseIdPrerequisiteIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.Courses.GetCourseResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.Course;
@@ -9,19 +11,18 @@ import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import ivanmartinez.simpleStudentsAPI.Repository.CourseRepository;
 import ivanmartinez.simpleStudentsAPI.Service.Implementations.CourseServiceImpl;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -74,6 +75,44 @@ class CourseServiceTest {
 
         //test
         verify(courseRepository).findAll();
+    }
+
+    @Test
+    void shouldGetCoursesContaining() throws ResourceNotFoundException {
+        //given
+        GetByRequest request = GetByRequest.builder()
+                .param("i")
+                .build();
+
+        Course course = Course.builder()
+                .id(1L)
+                .name("Course 1")
+                .professors(new HashSet<>())
+                .students(new HashSet<>())
+                .requiredForDegree(new HashSet<>())
+                .optionalForDegree(new HashSet<>())
+                .coursesPrerequisites(new HashSet<>())
+                .build();
+
+        ArrayList<Course> courses = new ArrayList<>();
+        courses.add(course);
+
+        ArrayList<GetCourseResponse> expectedResponse = new ArrayList<>();
+        expectedResponse.add(GetCourseResponse.builder()
+                .id(1L)
+                .name("Course 1")
+                .professors(new ArrayList<>())
+                .students(new ArrayList<>())
+                .requiredForDegree(new ArrayList<>())
+                .optionalForDegree(new ArrayList<>())
+                .build());
+
+        given(courseRepository.getAllBy(request.getParam())).willReturn(courses);
+        //when
+        ResponseEntity<List<GetCourseResponse>> response = underTest.getCoursesContaining(request);
+
+        //test
+        AssertionsForClassTypes.assertThat(response.getBody()).isEqualTo(expectedResponse);
     }
 
     @Test

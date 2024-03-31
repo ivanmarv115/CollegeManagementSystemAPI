@@ -23,4 +23,6 @@ public interface ProfessorService {
     ResponseEntity<String> deleteProfessor(LongIdRequest id) throws ResourceNotFoundException;
 
     ResponseEntity<String> assignCourse(AssignCourseRequest request) throws ResourceNotFoundException;
+
+    ResponseEntity<List<GetProfessorResponse>> getProfessorsContaining(GetByRequest request) throws ResourceNotFoundException;
 }

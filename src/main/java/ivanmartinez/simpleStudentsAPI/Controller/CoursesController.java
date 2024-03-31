@@ -4,6 +4,7 @@ import ivanmartinez.simpleStudentsAPI.DTO.Courses.CourseIdPrerequisiteIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.GetCourseResponse;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
@@ -28,10 +29,18 @@ public class CoursesController {
         return courseService.createCourse(request);
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<GetCourseResponse>> getAllCourses()
             throws ResourceNotFoundException {
         return courseService.getAllCourses();
+    }
+
+    @GetMapping("/by")
+    public ResponseEntity<List<GetCourseResponse>> getCoursesContaining(
+            @RequestBody GetByRequest request
+            )
+            throws ResourceNotFoundException {
+        return courseService.getCoursesContaining(request);
     }
 
     @PutMapping

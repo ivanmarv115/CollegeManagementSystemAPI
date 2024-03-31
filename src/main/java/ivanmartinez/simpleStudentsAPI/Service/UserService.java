@@ -2,6 +2,7 @@ package ivanmartinez.simpleStudentsAPI.Service;
 
 import ivanmartinez.simpleStudentsAPI.DTO.ChangePasswordRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.CreateUserRequest;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.Entity.User;
 import ivanmartinez.simpleStudentsAPI.Exception.CustomException;
@@ -9,6 +10,8 @@ import ivanmartinez.simpleStudentsAPI.Exception.InvalidRequestException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 public interface UserService {
     User createUser(CreateUserRequest createUserRequest) throws ResourceAlreadyExistsException;
@@ -21,4 +24,8 @@ public interface UserService {
 
     ResponseEntity<String> changePassword(ChangePasswordRequest request)
             throws ResourceNotFoundException, InvalidRequestException;
+
+    ResponseEntity<List<User>> getAllUsers();
+
+    ResponseEntity<List<User>> getUsersContaining(GetByRequest request) throws ResourceNotFoundException;
 }

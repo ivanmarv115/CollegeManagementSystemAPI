@@ -3,6 +3,7 @@ package ivanmartinez.simpleStudentsAPI.Service;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.CourseIdPrerequisiteIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.CreateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.GetCourseResponse;
+import ivanmartinez.simpleStudentsAPI.DTO.GetByRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.LongIdRequest;
 import ivanmartinez.simpleStudentsAPI.DTO.Courses.UpdateCourseRequest;
 import ivanmartinez.simpleStudentsAPI.Exception.ResourceAlreadyExistsException;
@@ -23,4 +24,6 @@ public interface CourseService {
     ResponseEntity<String> addCoursePrerequisite(CourseIdPrerequisiteIdRequest request) throws ResourceNotFoundException;
 
     ResponseEntity<String> removeCoursePrerequisite(CourseIdPrerequisiteIdRequest request) throws ResourceNotFoundException;
+
+    ResponseEntity<List<GetCourseResponse>> getCoursesContaining(GetByRequest request) throws ResourceNotFoundException;
 }

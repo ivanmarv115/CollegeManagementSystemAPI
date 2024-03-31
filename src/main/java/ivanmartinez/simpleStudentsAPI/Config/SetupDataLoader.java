@@ -36,12 +36,13 @@ public class SetupDataLoader implements
             user.setUsername("adminpred");
             user.setPassword(pass);
             user.setRole(Role.ADMIN);
+            user.setIsNonLocked(true);
             userRepository.save(user);
         }
         else{
             User adminUser = optionalAdminUser.get();
             adminUser.setRole(Role.ADMIN);
-            adminUser.setPassword(pass);
+            user.setIsNonLocked(true);
             userRepository.save(adminUser);
         }
 

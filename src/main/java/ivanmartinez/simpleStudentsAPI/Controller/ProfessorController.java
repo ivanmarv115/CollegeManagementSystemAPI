@@ -25,9 +25,16 @@ public class ProfessorController {
     @Autowired
     private ProfessorService professorService;
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<GetProfessorResponse>> getAllProfessors() {
         return professorService.getAllProfessors();
+    }
+
+    @GetMapping("/by")
+    public ResponseEntity<List<GetProfessorResponse>> getProfessorsContaining(
+            @RequestBody GetByRequest request
+    ) throws ResourceNotFoundException {
+        return professorService.getProfessorsContaining(request);
     }
 
     @PostMapping

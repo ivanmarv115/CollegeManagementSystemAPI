@@ -64,7 +64,33 @@ class ProfessorControllerTest {
                 ResponseEntity.ok(response));
 
         // Test
-        mockMvc.perform(get("/professors"))
+        mockMvc.perform(get("/professors/all"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(objectMapper.writeValueAsString(response)));
+    }
+
+    @Test
+    void shouldGetProfessorsContaining() throws Exception {
+        // Given
+        GetByRequest request = GetByRequest.builder()
+                .param("Ivan")
+                .build();
+
+        List<GetProfessorResponse> response = new ArrayList<>();
+        response.add(GetProfessorResponse.builder()
+                .firstName("Ivan")
+                .lastName("Martinez")
+                .username("imartinez")
+                .build());
+
+        given(professorService.getProfessorsContaining(request)).willReturn(
+                ResponseEntity.ok(response));
+
+        // Test
+        mockMvc.perform(get("/professors/by")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().string(objectMapper.writeValueAsString(response)));
